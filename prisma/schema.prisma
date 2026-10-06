@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Taller {
+  id        String   @id @default(cuid())
+  nombre    String
+  telefono  String?
+  direccion String?
+  lotes     Lote[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lote {
+  id                    String   @id @default(cuid())
+  numeroLote            String   // Reference or lot number
+  tipoPrenda            String
+  cantidad              Int
+  precioUnitario        Float
+  fechaInicio           DateTime
+  fechaEntregaPactada   DateTime
+  estado                String   @default("EN_PROCESO") // EN_PROCESO, DEMORADO, ENTREGADO, CANCELADO
+  pagado                Boolean  @default(false)
+  insumosEntregados     String?  
+  
+  tallerId              String
+  taller                Taller   @relation(fields: [tallerId], references: [id])
+  
+  abonos                Abono[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Abono {
+  id        String   @id @default(cuid())
+  monto     Float
+  fecha     DateTime @default(now())
+  nota      String?
+  
+  loteId    String
+  lote      Lote     @relation(fields: [loteId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}
