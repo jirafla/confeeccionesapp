@@ -38,7 +38,7 @@ export default function DashboardCharts({
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => [`${value} lotes`, "Cantidad"]}
+                  formatter={(value: any) => [`${value} lotes`, "Cantidad"]}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="bottom" height={36} />
@@ -65,7 +65,7 @@ export default function DashboardCharts({
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} tickFormatter={(value) => `$${value/1000}k`} />
                 <Tooltip 
                   cursor={{fill: 'transparent'}}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
+                  formatter={(value: any) => [`$${Number(value).toLocaleString()}`, ""]}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="bottom" height={36} />
