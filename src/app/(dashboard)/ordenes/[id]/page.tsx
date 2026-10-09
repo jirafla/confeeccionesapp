@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowLeft, Factory, CheckCircle2, AlertTriangle, PlayCircle } from "lucide-react";
 import AsignarTallerForm from "./AsignarTallerForm";
 import ConciliarLoteModal from "./ConciliarLoteModal";
+import OrdenTracking from "./OrdenTracking";
+import ImageLightbox from "@/components/ImageLightbox";
 
 export default async function OrdenDetail({ params }: { params: { id: string } }) {
   const { empresa } = await requireAuth();
@@ -41,23 +43,17 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
           <ArrowLeft className="w-6 h-6" />
         </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Detalle de Orden</h1>
-        <span className={`px-3 py-1 text-xs font-bold rounded-lg ml-4
-          ${orden.estado === 'DISENO' ? 'bg-purple-100 text-purple-700' :
-            orden.estado === 'CORTE' ? 'bg-orange-100 text-orange-700' :
-            orden.estado === 'CONFECCION' ? 'bg-blue-100 text-blue-700' :
-            'bg-emerald-100 text-emerald-700'}`}>
-          {orden.estado}
-        </span>
       </div>
+
+      <OrdenTracking ordenId={orden.id} estadoActual={orden.estado} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* INFO DE LA ORDEN */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="aspect-video bg-slate-50 relative flex items-center justify-center border-b border-gray-100">
+            <div className="aspect-video bg-slate-50 relative flex items-center justify-center border-b border-gray-100 overflow-hidden">
               {orden.referencia.disenoArchivoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={orden.referencia.disenoArchivoUrl} alt="Diseño" className="w-full h-full object-cover" />
+                <ImageLightbox src={orden.referencia.disenoArchivoUrl} alt="Diseño" className="w-full h-full" />
               ) : (
                 <span className="text-slate-400 font-medium">Sin imagen</span>
               )}

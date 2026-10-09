@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus, Search, FileImage, FileText } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { requireAuth } from "@/lib/auth";
+import ImageLightbox from "@/components/ImageLightbox";
 
 export default async function Referencias({
   searchParams,
@@ -56,10 +57,9 @@ export default async function Referencias({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {referencias.map((ref) => (
           <div key={ref.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all flex flex-col">
-            <div className="aspect-video bg-slate-50 relative flex items-center justify-center border-b border-gray-100">
+            <div className="aspect-video bg-slate-50 relative flex items-center justify-center border-b border-gray-100 overflow-hidden">
               {ref.disenoArchivoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={ref.disenoArchivoUrl} alt={ref.codigo} className="w-full h-full object-cover" />
+                <ImageLightbox src={ref.disenoArchivoUrl} alt={ref.codigo} className="w-full h-full" />
               ) : (
                 <div className="text-slate-300 flex flex-col items-center">
                   <FileImage className="w-10 h-10 mb-2" />

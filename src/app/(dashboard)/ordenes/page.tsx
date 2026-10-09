@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { requireAuth } from "@/lib/auth";
+import ImageLightbox from "@/components/ImageLightbox";
 
 export default async function Ordenes({
   searchParams,
@@ -67,14 +68,15 @@ export default async function Ordenes({
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200 transition-all">
                 <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between">
                   <div className="flex gap-4 items-center">
-                    {orden.referencia.disenoArchivoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={orden.referencia.disenoArchivoUrl} alt="" className="w-16 h-16 rounded-xl object-cover border border-slate-100 shrink-0" />
-                    ) : (
-                      <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 border border-slate-200">
-                        <span className="text-xs text-slate-400 font-semibold uppercase">{orden.referencia.codigo.slice(0,3)}</span>
-                      </div>
-                    )}
+                    <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-100">
+                      {orden.referencia.disenoArchivoUrl ? (
+                        <ImageLightbox src={orden.referencia.disenoArchivoUrl} alt="" className="w-full h-full" />
+                      ) : (
+                        <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                          <span className="text-xs text-slate-400 font-semibold uppercase">{orden.referencia.codigo.slice(0,3)}</span>
+                        </div>
+                      )}
+                    </div>
                     
                     <div>
                       <h2 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
