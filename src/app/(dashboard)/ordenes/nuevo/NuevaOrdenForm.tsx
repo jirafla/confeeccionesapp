@@ -74,7 +74,11 @@ export default function NuevaOrden({
               className="block w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             >
               <option value="">Selecciona una referencia</option>
-              {referencias.map(r => <option key={r.id} value={r.id}>{r.codigo}</option>)}
+              {referencias.map(r => (
+                <option key={r.id} value={r.id}>
+                  {r.codigo}{r.nombrePrenda ? ` — ${r.nombrePrenda}` : ""}
+                </option>
+              ))}
             </select>
           </div>
         </div>

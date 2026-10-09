@@ -19,7 +19,12 @@ export default async function Referencias({
   const referencias = await prisma.referencia.findMany({
     where: {
       empresaId: empresa.id,
-      ...(q ? { codigo: { contains: q, mode: 'insensitive' } } : {})
+      ...(q ? {
+        OR: [
+          { codigo: { contains: q, mode: 'insensitive' } },
+          { nombrePrenda: { contains: q, mode: 'insensitive' } }
+        ]
+      } : {})
     },
     include: {
       _count: { select: { ordenes: true } }
@@ -48,7 +53,7 @@ export default async function Referencias({
           type="search"
           name="q"
           defaultValue={q}
-          placeholder="Buscar por código..."
+          placeholder="Buscar por código o prenda (ej. 5370, Vestido)..."
           className="w-full bg-transparent border-none focus:ring-0 text-sm outline-none py-2"
         />
       </form>
@@ -73,6 +78,11 @@ export default async function Referencias({
               </div>
               <div className="px-3 sm:px-4 pt-3">
                 <h2 className="text-base sm:text-lg font-black text-slate-900 truncate group-hover:text-blue-600 transition-colors">{ref.codigo}</h2>
+                {ref.nombrePrenda && (
+                  <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
+                    {ref.nombrePrenda}
+                  </p>
+                )}
               </div>
             </Link>
 

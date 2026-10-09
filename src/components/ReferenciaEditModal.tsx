@@ -4,14 +4,30 @@ import { useState } from "react";
 import { updateReferencia } from "@/app/actions/referenciaActions";
 import { toast } from "sonner";
 import { X, Edit2, ImageIcon, FileText, Upload } from "lucide-react";
+import TelasInputList, { TelaInputItem } from "./TelasInputList";
+import { parseTelas } from "@/lib/ordenes";
 
-type Ref = { id: string; codigo: string; disenoArchivoUrl: string | null; optitexArchivoUrl: string | null };
+type Ref = { 
+  id: string; 
+  codigo: string; 
+  nombrePrenda?: string | null;
+  telasDetalles?: string | null;
+  disenoArchivoUrl: string | null; 
+  optitexArchivoUrl: string | null;
+};
 
 export default function ReferenciaEditModal({ referencia, variant = "icon" }: { referencia: Ref; variant?: "icon" | "button" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [optitexName, setOptitexName] = useState<string | null>(null);
+
+  const initialTelasParsed = parseTelas(referencia.telasDetalles);
+  const [telas, setTelas] = useState<TelaInputItem[]>(
+    initialTelasParsed.length > 0
+      ? initialTelasParsed.map((t) => ({ nombre: t.nombre, tipo: t.tipo, promedio: t.promedio }))
+      : [{ nombre: "Tela 1", tipo: "", promedio: "" }]
+  );
 
   const cerrar = () => {
     setIsOpen(false);
@@ -46,7 +62,7 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
           onClick={cerrar}
         >
           <div
-            className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
+            className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-xl max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white flex justify-between items-center p-5 border-b border-slate-100 z-10">
@@ -59,6 +75,17 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
             <form
               action={async (formData) => {
                 setIsPending(true);
+
+                const telasValidas = telas
+                  .filter((t) => t.tipo.trim() || t.promedio !== "")
+                  .map((t) => ({
+                    nombre: t.nombre.trim() || "Tela",
+                    tipo: t.tipo.trim(),
+                    promedio: typeof t.promedio === "number" ? t.promedio : parseFloat(t.promedio) || 0
+                  }));
+
+                formData.set("telasDetalles", JSON.stringify(telasValidas));
+
                 const res = await updateReferencia(referencia.id, formData);
                 setIsPending(false);
                 if (res?.error) toast.error(res.error);
@@ -69,19 +96,41 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
               }}
               className="p-5 space-y-5"
             >
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Código de referencia <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  name="codigo"
-                  required
-                  defaultValue={referencia.codigo}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Código de referencia <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="codigo"
+                    required
+                    defaultValue={referencia.codigo}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Nombre de la prenda
+                  </label>
+                  <input
+                    type="text"
+                    name="nombrePrenda"
+                    defaultValue={referencia.nombrePrenda || ""}
+                    placeholder="Ej. Vestido con cuello"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 text-sm px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  />
+                </div>
+              </div>
+
+              {/* Telas */}
+              <div className="border-t border-slate-100 pt-2">
+                <TelasInputList telas={telas} onChange={setTelas} />
               </div>
 
               {/* Imagen */}
-              <div>
+              <div className="border-t border-slate-100 pt-3">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Imagen del diseño</label>
                 <label className="group relative flex items-center gap-4 p-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 cursor-pointer transition-colors">
                   <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center shrink-0">

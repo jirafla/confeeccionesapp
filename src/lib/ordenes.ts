@@ -31,3 +31,29 @@ export function parseVariantes(coloresDetalles: string | null | undefined) {
 export function downloadUrl(url: string) {
   return `${url}${url.includes("?") ? "&" : "?"}download=`;
 }
+
+export type TelaItem = {
+  nombre: string;
+  tipo: string;
+  promedio: number;
+};
+
+/** Parsea el string JSON de telas de una referencia */
+export function parseTelas(telasDetalles: string | null | undefined): TelaItem[] {
+  if (!telasDetalles) return [];
+  try {
+    const parsed = JSON.parse(telasDetalles);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .filter((t) => t && typeof t === "object")
+        .map((t) => ({
+          nombre: String(t.nombre || "Tela"),
+          tipo: String(t.tipo || ""),
+          promedio: typeof t.promedio === "number" ? t.promedio : parseFloat(t.promedio) || 0,
+        }));
+    }
+  } catch {
+    // Si no es JSON válido
+  }
+  return [];
+}

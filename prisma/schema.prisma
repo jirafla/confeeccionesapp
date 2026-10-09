@@ -67,6 +67,8 @@ model Cliente {
 model Referencia {
   id                String   @id @default(cuid())
   codigo            String   
+  nombrePrenda      String?  // Ej. "Vestido con cuello"
+  telasDetalles     String?  // JSON con lista de telas: [{ nombre: "Tela 1", tipo: "Malla", promedio: 0.57 }]
   disenoArchivoUrl  String? 
   optitexArchivoUrl String? 
   

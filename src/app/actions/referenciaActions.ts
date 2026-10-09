@@ -24,6 +24,9 @@ export async function createReferencia(formData: FormData) {
   const { empresa } = await requireAuth();
 
   const codigo = (formData.get("codigo") as string)?.trim();
+  const nombrePrenda = (formData.get("nombrePrenda") as string)?.trim() || null;
+  const telasDetalles = (formData.get("telasDetalles") as string)?.trim() || null;
+
   if (!codigo) return { error: "El código es requerido." };
 
   let disenoArchivoUrl: string | null = null;
@@ -38,6 +41,8 @@ export async function createReferencia(formData: FormData) {
   await prisma.referencia.create({
     data: {
       codigo,
+      nombrePrenda,
+      telasDetalles,
       disenoArchivoUrl,
       optitexArchivoUrl,
       empresaId: empresa.id
@@ -51,9 +56,23 @@ export async function updateReferencia(id: string, formData: FormData) {
   const { empresa } = await requireAuth();
 
   const codigo = (formData.get("codigo") as string)?.trim();
+  const nombrePrenda = (formData.get("nombrePrenda") as string)?.trim() || null;
+  const telasDetalles = (formData.get("telasDetalles") as string)?.trim() || null;
+
   if (!codigo) return { error: "El código es requerido." };
 
-  const data: { codigo: string; disenoArchivoUrl?: string; optitexArchivoUrl?: string } = { codigo };
+  const data: { 
+    codigo: string; 
+    nombrePrenda: string | null; 
+    telasDetalles: string | null;
+    disenoArchivoUrl?: string; 
+    optitexArchivoUrl?: string;
+  } = { 
+    codigo,
+    nombrePrenda,
+    telasDetalles
+  };
+
   try {
     const diseno = await subirArchivo(empresa.id, formData.get("disenoArchivo") as File | null, "diseno");
     const optitex = await subirArchivo(empresa.id, formData.get("optitexArchivo") as File | null, "optitex");

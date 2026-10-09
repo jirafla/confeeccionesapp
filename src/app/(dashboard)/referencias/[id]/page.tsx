@@ -2,11 +2,21 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download, FileText, ImageIcon, Shirt, ChevronRight, Plus } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Download, 
+  FileText, 
+  ImageIcon, 
+  Shirt, 
+  ChevronRight, 
+  Plus,
+  Layers,
+  Sparkles
+} from "lucide-react";
 import ImageLightbox from "@/components/ImageLightbox";
 import ReferenciaEditModal from "@/components/ReferenciaEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
-import { nombreOrden, estadoOrden, downloadUrl } from "@/lib/ordenes";
+import { nombreOrden, estadoOrden, downloadUrl, parseTelas } from "@/lib/ordenes";
 
 export default async function ReferenciaDetalle({ params }: { params: Promise<{ id: string }> }) {
   const { empresa } = await requireAuth();
@@ -28,6 +38,7 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
   const totalPrendas = ordenes.reduce((s, o) => s + o.cantidadTotal, 0);
   const activas = ordenes.filter(o => o.estado !== 'ENTREGADO').length;
   const entregadas = ordenes.length - activas;
+  const telas = parseTelas(referencia.telasDetalles);
 
   return (
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
@@ -39,7 +50,17 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
           </Link>
           <div className="min-w-0">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Referencia</p>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight truncate">{referencia.codigo}</h1>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{referencia.codigo}</h1>
+              {referencia.nombrePrenda && (
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200">
+                  {referencia.nombrePrenda}
+                </span>
+              )}
+            </div>
+            {referencia.nombrePrenda && (
+              <p className="text-sm text-slate-500 mt-0.5">{referencia.nombrePrenda}</p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -60,8 +81,9 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
-        {/* IZQUIERDA: IMAGEN + ARCHIVOS */}
+        {/* IZQUIERDA: IMAGEN + TELAS + ARCHIVOS */}
         <div className="space-y-5">
+          {/* Imagen */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="aspect-square bg-slate-50 flex items-center justify-center">
               {referencia.disenoArchivoUrl ? (
@@ -75,6 +97,42 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
             </div>
           </div>
 
+          {/* Tarjeta de Telas y Consumo Promedio */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                Telas y Consumo
+              </h3>
+              <span className="text-xs text-slate-400 font-medium">{telas.length} {telas.length === 1 ? 'tela' : 'telas'}</span>
+            </div>
+
+            {telas.length === 0 ? (
+              <p className="text-xs text-slate-400 px-1 py-2">
+                No hay telas registradas para esta referencia. Puedes agregarlas haciendo clic en &quot;Editar&quot;.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {telas.map((tela, idx) => (
+                  <div 
+                    key={idx}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-sm"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <span className="text-[11px] font-bold uppercase text-slate-400 block">{tela.nombre}</span>
+                      <p className="font-semibold text-slate-800 truncate">{tela.tipo || "Sin tipo especificado"}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="font-black text-indigo-600 text-base">{tela.promedio}</span>
+                      <span className="text-xs text-slate-400 font-medium ml-1">mts/pda</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Archivos */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 mb-1">Archivos</h3>
             <ArchivoFila

@@ -107,6 +107,9 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                   <Link href={`/referencias/${orden.referencia.id}`} className="font-semibold text-blue-600 hover:underline">
                     {orden.referencia.codigo}
                   </Link>
+                  {orden.referencia.nombrePrenda && (
+                    <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{orden.referencia.nombrePrenda}</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Creada</p>
