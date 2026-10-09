@@ -27,7 +27,7 @@ export default async function Talleres({
     },
     include: {
       _count: {
-        select: { lotes: true }
+        select: { asignaciones: true }
       }
     },
     orderBy: { createdAt: 'desc' }
@@ -56,7 +56,7 @@ export default async function Talleres({
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-lg font-bold text-slate-900 truncate pr-2 group-hover:text-blue-600 transition-colors">{taller.nombre}</h2>
                 <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 whitespace-nowrap">
-                  {taller._count.lotes} {taller._count.lotes === 1 ? 'lote' : 'lotes'}
+                  {taller._count.asignaciones} asignaciones
                 </span>
               </div>
               

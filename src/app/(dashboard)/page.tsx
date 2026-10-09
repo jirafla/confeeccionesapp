@@ -7,18 +7,11 @@ import { requireAuth } from "@/lib/auth";
 export default async function Home() {
   const { empresa } = await requireAuth();
 
-  const [totalTalleres, lotes, lotesDemorados] = await Promise.all([
-    prisma.taller.count({ where: { empresaId: empresa.id } }),
-    prisma.lote.findMany({ where: { empresaId: empresa.id }, include: { abonos: true } }),
-    prisma.lote.findMany({
-      where: {
-        empresaId: empresa.id,
-        estado: { not: "ENTREGADO" },
-        fechaEntregaPactada: { lt: new Date() }
-      },
-      include: { taller: true }
-    })
-  ]);
+  const totalTalleres = await prisma.taller.count({ where: { empresaId: empresa.id } });
+  
+  // TODO: Fix these when Asignaciones and Ordenes are ready
+  const lotes = [] as any[];
+  const lotesDemorados = [] as any[];
 
   const lotesActivos = lotes.filter(l => l.estado !== "ENTREGADO" && l.estado !== "CANCELADO").length;
   

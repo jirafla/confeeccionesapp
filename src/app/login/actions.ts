@@ -24,6 +24,25 @@ export async function login(formData: FormData) {
     return { error: error.message }
   }
 
+  if (data.user) {
+    const dbUser = await prisma.usuario.findUnique({ where: { id: data.user.id } });
+    if (!dbUser) {
+      // Auto-sync user if they lost their DB record (e.g. after a force-reset)
+      // Hardcode to the new Empresa for testing
+      const empresa = await prisma.empresa.findFirst();
+      if (empresa) {
+        await prisma.usuario.create({
+          data: {
+            id: data.user.id,
+            email: data.user.email!,
+            empresaId: empresa.id,
+            rol: "ADMIN"
+          }
+        });
+      }
+    }
+  }
+
   revalidatePath('/', 'layout')
   redirect('/')
 }

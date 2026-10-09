@@ -16,7 +16,7 @@ async function main() {
   // 1. Create a dummy Empresa for this user
   const empresa = await prisma.empresa.create({
     data: {
-      nombre: "Confecciones JIRAFLA",
+      nombre: "Confecciones Sunset",
     }
   });
 

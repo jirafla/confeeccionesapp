@@ -15,7 +15,10 @@ model Empresa {
   
   usuarios    Usuario[]
   talleres    Taller[]
-  lotes       Lote[]
+  clientes    Cliente[]
+  referencias Referencia[]
+  ordenes     OrdenProduccion[]
+  asignaciones Asignacion[]
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -39,7 +42,7 @@ model Taller {
   nombre    String
   telefono  String?
   direccion String?
-  lotes     Lote[]
+  asignaciones Asignacion[]
   
   empresaId String
   empresa   Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
@@ -48,38 +51,89 @@ model Taller {
   updatedAt DateTime @updatedAt
 }
 
-model Lote {
-  id                    String   @id @default(cuid())
-  numeroLote            String   
-  tipoPrenda            String
-  cantidad              Int
-  precioUnitario        Float
-  fechaInicio           DateTime
-  fechaEntregaPactada   DateTime
-  estado                String   @default("EN_PROCESO")
-  pagado                Boolean  @default(false)
-  insumosEntregados     String?  
+model Cliente {
+  id        String   @id @default(cuid())
+  nombre    String
+  telefono  String?
   
-  tallerId              String
-  taller                Taller   @relation(fields: [tallerId], references: [id])
+  empresaId String
+  empresa   Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  ordenes   OrdenProduccion[]
   
-  empresaId             String
-  empresa               Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  
-  abonos                Abono[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model Referencia {
+  id                String   @id @default(cuid())
+  codigo            String   
+  disenoArchivoUrl  String? 
+  optitexArchivoUrl String? 
+  precioBase        Float
+  
+  empresaId         String
+  empresa           Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  ordenes           OrdenProduccion[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model OrdenProduccion {
+  id                String   @id @default(cuid())
+  cantidadTotal     Int
+  coloresDetalles   String?
+  estado            String   @default("DISENO") // DISENO, CORTE, CONFECCION, ENTREGADO
+
+  clienteId         String
+  cliente           Cliente    @relation(fields: [clienteId], references: [id])
+  referenciaId      String
+  referencia        Referencia @relation(fields: [referenciaId], references: [id])
+  
+  empresaId         String
+  empresa           Empresa    @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  
+  asignaciones      Asignacion[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Asignacion {
+  id                String   @id @default(cuid())
+  cantidadAsignada  Int
+  precioUnitario    Float
+  insumosEntregados String?
+  fechaEnvio        DateTime
+  fechaEntregaEsperada DateTime
+  
+  cantidadBuena     Int?     @default(0)
+  reprocesos        Int?     @default(0)
+  estadoLote        String   @default("ASIGNADO") // ASIGNADO, ENTREGADO
+  estadoPago        String   @default("PENDIENTE") // PENDIENTE, PAGADO
+
+  ordenId           String
+  orden             OrdenProduccion @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  tallerId          String
+  taller            Taller          @relation(fields: [tallerId], references: [id])
+  
+  empresaId         String
+  empresa           Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  
+  abonos            Abono[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
 model Abono {
-  id        String   @id @default(cuid())
-  monto     Float
-  fecha     DateTime @default(now())
-  nota      String?
+  id           String   @id @default(cuid())
+  monto        Float
+  fecha        DateTime @default(now())
+  nota         String?
   
-  loteId    String
-  lote      Lote     @relation(fields: [loteId], references: [id], onDelete: Cascade)
+  asignacionId String
+  asignacion   Asignacion @relation(fields: [asignacionId], references: [id], onDelete: Cascade)
   
-  createdAt DateTime @default(now())
+  createdAt    DateTime @default(now())
 }

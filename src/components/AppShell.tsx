@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Factory, PackageSearch, FileSpreadsheet, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, Factory, Users, Shirt, PackageSearch, FileSpreadsheet, Settings } from "lucide-react";
 import { logout } from "@/app/login/actions";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -10,8 +10,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const links = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/clientes", label: "Clientes", icon: Users },
+    { href: "/referencias", label: "Catálogo", icon: Shirt },
     { href: "/talleres", label: "Talleres", icon: Factory },
-    { href: "/lotes", label: "Lotes", icon: PackageSearch },
+    { href: "/ordenes", label: "Órdenes", icon: PackageSearch },
     { href: "/reportes", label: "Reportes", icon: FileSpreadsheet },
     { href: "/configuracion", label: "Configuración", icon: Settings },
   ];

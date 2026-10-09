@@ -14,7 +14,7 @@ export default async function DetalleTaller({ params }: { params: { id: string }
   const taller = await prisma.taller.findUnique({
     where: { id, empresaId: empresa.id },
     include: {
-      lotes: {
+      asignaciones: {
         orderBy: { createdAt: 'desc' }
       }
     }
@@ -72,9 +72,9 @@ export default async function DetalleTaller({ params }: { params: { id: string }
                   buttonText="Eliminar Taller"
                 />
               )}
-              {taller.lotes.length > 0 && (
+              {taller.asignaciones.length > 0 && (
                  <p className="text-[10px] text-center text-slate-400 mt-2">
-                   No puedes eliminar este taller porque tiene lotes asignados.
+                   No puedes eliminar este taller porque tiene asignaciones.
                  </p>
               )}
             </div>
@@ -84,65 +84,16 @@ export default async function DetalleTaller({ params }: { params: { id: string }
         {/* Columna Derecha - Lotes Asignados */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-slate-900">Lotes Asignados ({taller.lotes.length})</h2>
-            <Link href="/lotes/nuevo" className="text-sm font-medium text-blue-600 hover:underline">
-              + Asignar Lote
-            </Link>
+            <h2 className="text-xl font-bold text-slate-900">Asignaciones ({taller.asignaciones.length})</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {taller.lotes.map((lote) => (
-              <div key={lote.id} className="block group">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all p-5 h-full flex flex-col">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ref {lote.numeroLote}</span>
-                      <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{lote.tipoPrenda}</h3>
-                    </div>
-                    <span className={`px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase rounded 
-                      ${lote.estado === 'ENTREGADO' ? 'bg-green-100 text-green-700' : 
-                        lote.estado === 'CANCELADO' ? 'bg-slate-200 text-slate-600' : 
-                        lote.estado === 'DEMORADO' ? 'bg-red-100 text-red-700' : 
-                        'bg-amber-100 text-amber-700'}`}>
-                      {lote.estado.replace("_", " ")}
-                    </span>
-                  </div>
-                  
-                  <div className="mt-auto pt-3 border-t border-gray-50 flex justify-between items-center text-sm mb-3">
-                    <span className="text-slate-500">{lote.cantidad} uds</span>
-                    <span className="font-medium text-slate-900">${lote.precioUnitario}</span>
-                  </div>
-                  
-                  <div className="flex gap-2 border-t border-gray-50 pt-3">
-                    <Link href={`/lotes/${lote.id}`} className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-center py-2 rounded-lg text-xs font-semibold transition-colors">
-                      Editar
-                    </Link>
-                    <form action={async () => {
-                      "use server";
-                      await prisma.lote.update({
-                        where: { id: lote.id },
-                        data: { estado: "CANCELADO" }
-                      });
-                    }} className="flex-1">
-                      <button type="submit" className="w-full bg-slate-50 text-slate-600 hover:bg-red-50 hover:text-red-600 text-center py-2 rounded-lg text-xs font-semibold transition-colors">
-                        Cancelar Lote
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {taller.lotes.length === 0 && (
-              <div className="col-span-full">
+             <div className="col-span-full">
                 <EmptyState 
-                  title="Sin lotes asignados" 
-                  description="Este taller no está trabajando en ningún lote actualmente." 
-                  actionLabel="Asignar Lote" 
-                  actionHref="/lotes/nuevo" 
+                  title="En Construcción" 
+                  description="Las asignaciones se mostrarán aquí pronto." 
                 />
               </div>
-            )}
           </div>
         </div>
       </div>

@@ -9,8 +9,8 @@ export default function EmptyState({
 }: {
   title: string;
   description: string;
-  actionLabel: string;
-  actionHref: string;
+  actionLabel?: string;
+  actionHref?: string;
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-gray-100 shadow-sm border-dashed">
@@ -19,13 +19,15 @@ export default function EmptyState({
       </div>
       <h2 className="text-xl font-bold text-gray-900 mb-2">{title}</h2>
       <p className="text-sm text-gray-500 mb-6 max-w-sm">{description}</p>
-      <Link 
-        href={actionHref}
-        className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-      >
-        <Plus className="w-4 h-4" />
-        {actionLabel}
-      </Link>
+      {actionLabel && actionHref && (
+        <Link 
+          href={actionHref}
+          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          {actionLabel}
+        </Link>
+      )}
     </div>
   );
 }
