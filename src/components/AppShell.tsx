@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Factory, Users, Shirt, PackageSearch, FileSpreadsheet, Settings } from "lucide-react";
+import { LayoutDashboard, Factory, Users, Shirt, PackageSearch, FileSpreadsheet, Settings, LogOut } from "lucide-react";
 import { logout } from "@/app/login/actions";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
