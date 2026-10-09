@@ -3,7 +3,6 @@
 import { Check } from "lucide-react";
 
 const ESTADOS = [
-  { id: "DISENO", label: "Diseño" },
   { id: "CORTE", label: "Corte" },
   { id: "CONFECCION", label: "Confección" },
   { id: "ENTREGADO", label: "Entregado a Cliente" }

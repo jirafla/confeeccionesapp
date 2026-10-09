@@ -22,7 +22,7 @@ export async function createOrden(formData: FormData) {
       referenciaId,
       cantidadTotal,
       coloresDetalles,
-      estado: "DISENO",
+      estado: "CORTE",
       empresaId: empresa.id
     }
   });

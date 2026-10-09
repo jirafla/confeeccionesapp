@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import Link from "next/link";
 import { ArrowLeft, Factory, CheckCircle2, AlertTriangle, PlayCircle } from "lucide-react";
@@ -7,6 +8,7 @@ import OrdenTracking from "./OrdenTracking";
 import ImageLightbox from "@/components/ImageLightbox";
 import AsignarTallerModal from "./AsignarTallerModal";
 import BotonAvanzarEstado from "./BotonAvanzarEstado";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 export default async function OrdenDetail({ params }: { params: { id: string } }) {
   const { empresa } = await requireAuth();
@@ -39,11 +41,28 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center space-x-4">
-        <Link href="/ordenes" className="text-slate-400 hover:text-slate-900 transition-colors">
-          <ArrowLeft className="w-6 h-6" />
-        </Link>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Detalle de Orden</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center space-x-4">
+          <Link href="/ordenes" className="text-slate-400 hover:text-slate-900 transition-colors">
+            <ArrowLeft className="w-6 h-6" />
+          </Link>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Detalle de Orden</h1>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {orden.asignaciones.length === 0 && (
+            <DeleteConfirmModal 
+              action={async () => {
+                "use server";
+                await prisma.ordenProduccion.delete({ where: { id: orden.id } });
+                redirect("/ordenes");
+              }}
+              title="¿Eliminar orden?"
+              description={`Estás a punto de eliminar esta orden. Esta acción no se puede deshacer.`}
+              buttonText="Eliminar Orden"
+            />
+          )}
+        </div>
       </div>
 
       <OrdenTracking ordenId={orden.id} estadoActual={orden.estado} />
@@ -113,32 +132,6 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
 
         {/* ASIGNACIONES (LOTES) */}
         <div className="lg:col-span-2 space-y-6">
-          {orden.estado === 'DISENO' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center flex flex-col items-center">
-              <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-              </div>
-              <h3 className="font-bold text-xl text-slate-900 mb-2">Etapa de Diseño / Preparación</h3>
-              <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-                La orden acaba de ser creada. Revisa los detalles, cantidades y variables antes de pasarla al equipo de corte.
-              </p>
-              
-              <div className="w-full text-left bg-slate-50 p-4 rounded-xl border border-slate-100 mb-2">
-                <h4 className="font-bold text-slate-700 mb-3 uppercase text-xs tracking-wider">Cantidades por Variante:</h4>
-                <ul className="space-y-2">
-                  {orden.coloresDetalles.split(',').map((line, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-slate-700 font-medium">
-                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                      {line.trim()}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <BotonAvanzarEstado ordenId={orden.id} siguienteEstado="CORTE" label="Enviar a Corte" />
-            </div>
-          )}
-
           {orden.estado === 'CORTE' && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center flex flex-col items-center">
               <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">

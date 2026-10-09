@@ -7,14 +7,25 @@ import EmptyState from "@/components/EmptyState";
 
 import { requireAuth } from "@/lib/auth";
 
-export default async function DetalleTaller({ params }: { params: { id: string } }) {
+export default async function DetalleTaller({ 
+  params, 
+  searchParams 
+}: { 
+  params: { id: string };
+  searchParams: Promise<{ q?: string }>;
+}) {
   const { empresa } = await requireAuth();
   const { id } = await params;
-  
+  const { q } = await searchParams;
   const taller = await prisma.taller.findUnique({
     where: { id, empresaId: empresa.id },
     include: {
       asignaciones: {
+        include: { 
+          orden: {
+            include: { referencia: true, cliente: true }
+          } 
+        },
         orderBy: { createdAt: 'desc' }
       }
     }
@@ -28,6 +39,13 @@ export default async function DetalleTaller({ params }: { params: { id: string }
       </div>
     );
   }
+
+  const query = q?.toLowerCase() || "";
+  const asignacionesFiltradas = taller.asignaciones.filter(a => 
+    a.orden.referencia.codigo.toLowerCase().includes(query) || 
+    a.orden.cliente.nombre.toLowerCase().includes(query) ||
+    a.estadoLote.toLowerCase().includes(query)
+  );
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -83,17 +101,80 @@ export default async function DetalleTaller({ params }: { params: { id: string }
 
         {/* Columna Derecha - Lotes Asignados */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
             <h2 className="text-xl font-bold text-slate-900">Asignaciones ({taller.asignaciones.length})</h2>
+            <form method="GET" className="relative">
+              <input 
+                type="text" 
+                name="q"
+                defaultValue={q}
+                placeholder="Buscar referencia o estado..." 
+                className="w-full sm:w-64 pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"
+              />
+              <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </form>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div className="col-span-full">
-                <EmptyState 
-                  title="En Construcción" 
-                  description="Las asignaciones se mostrarán aquí pronto." 
-                />
-              </div>
+          <div className="grid grid-cols-1 gap-4">
+             {asignacionesFiltradas.length === 0 ? (
+                <div className="col-span-full">
+                  <EmptyState 
+                    title="No hay asignaciones" 
+                    description={q ? "No se encontraron asignaciones que coincidan con tu búsqueda." : "Este taller aún no tiene piezas asignadas."} 
+                  />
+                </div>
+             ) : (
+                asignacionesFiltradas.map((asig) => (
+                  <Link key={asig.id} href={`/ordenes/${asig.ordenId}`} className="block group">
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                              {asig.orden.referencia.codigo}
+                            </span>
+                            <span className="text-slate-300">•</span>
+                            <span className="text-sm font-medium text-slate-500">{asig.orden.cliente.nombre}</span>
+                          </div>
+                          <div className="flex items-center gap-4 mt-2">
+                            <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                              Envío: {asig.fechaEnvio.toLocaleDateString()}
+                            </p>
+                            <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              Pactada: {asig.fechaEntregaEsperada.toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-lg shrink-0
+                          ${asig.estadoLote === 'ENTREGADO' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                          {asig.estadoLote}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-6 mt-4 pt-4 border-t border-slate-50">
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Asignadas</p>
+                          <p className="font-semibold text-slate-800">{asig.cantidadAsignada}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Entregadas</p>
+                          <p className="font-semibold text-slate-800">
+                            {asig.estadoLote === 'ENTREGADO' ? asig.cantidadBuena : '--'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Total a Pagar</p>
+                          <p className="font-bold text-indigo-600">${(asig.cantidadAsignada * asig.precioUnitario).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+             )}
           </div>
         </div>
       </div>
