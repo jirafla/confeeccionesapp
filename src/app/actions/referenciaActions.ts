@@ -10,12 +10,11 @@ export async function createReferencia(formData: FormData) {
   const { empresa } = await requireAuth();
 
   const codigo = formData.get("codigo") as string;
-  const precioBase = parseFloat(formData.get("precioBase") as string);
   
   const disenoFile = formData.get("disenoArchivo") as File | null;
   const optitexFile = formData.get("optitexArchivo") as File | null;
 
-  if (!codigo || isNaN(precioBase)) return { error: "Campos inválidos" };
+  if (!codigo) return { error: "El código es requerido." };
 
   const supabase = await createClient();
 
@@ -52,11 +51,42 @@ export async function createReferencia(formData: FormData) {
   await prisma.referencia.create({
     data: {
       codigo,
-      precioBase,
       disenoArchivoUrl,
       optitexArchivoUrl,
       empresaId: empresa.id
     }
+  });
+
+  redirect("/referencias");
+}
+
+export async function updateReferencia(id: string, formData: FormData) {
+  const { empresa } = await requireAuth();
+  const codigo = formData.get("codigo") as string;
+  if (!codigo) return { error: "El código es requerido." };
+
+  await prisma.referencia.update({
+    where: { id, empresaId: empresa.id },
+    data: { codigo }
+  });
+  
+  redirect("/referencias");
+}
+
+export async function deleteReferencia(id: string) {
+  const { empresa } = await requireAuth();
+  
+  const ref = await prisma.referencia.findUnique({
+    where: { id, empresaId: empresa.id },
+    include: { _count: { select: { ordenes: true } } }
+  });
+
+  if (ref && ref._count.ordenes > 0) {
+    return { error: "No se puede eliminar porque tiene órdenes asociadas." };
+  }
+
+  await prisma.referencia.delete({
+    where: { id, empresaId: empresa.id }
   });
 
   redirect("/referencias");

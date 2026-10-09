@@ -69,7 +69,6 @@ model Referencia {
   codigo            String   
   disenoArchivoUrl  String? 
   optitexArchivoUrl String? 
-  precioBase        Float
   
   empresaId         String
   empresa           Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)

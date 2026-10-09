@@ -169,7 +169,6 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
                   <AsignarTallerModal 
                     ordenId={orden.id} 
                     talleres={talleres} 
-                    precioSugerido={orden.referencia.precioBase} 
                     pendientes={pendientesPorAsignar} 
                   />
                 )}
@@ -186,7 +185,6 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
                   <AsignarTallerModal 
                     ordenId={orden.id} 
                     talleres={talleres} 
-                    precioSugerido={orden.referencia.precioBase} 
                     pendientes={pendientesPorAsignar} 
                     isFirst={true}
                   />

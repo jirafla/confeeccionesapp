@@ -9,12 +9,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const links = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/clientes", label: "Clientes", icon: Users },
-    { href: "/referencias", label: "Catálogo", icon: Shirt },
-    { href: "/talleres", label: "Talleres", icon: Factory },
+    { href: "/", label: "Dashboard / Reportes", icon: LayoutDashboard },
     { href: "/ordenes", label: "Órdenes", icon: PackageSearch },
-    { href: "/reportes", label: "Reportes", icon: FileSpreadsheet },
+    { href: "/referencias", label: "Referencias", icon: Shirt },
+    { href: "/talleres", label: "Talleres", icon: Factory },
+    { href: "/clientes", label: "Clientes", icon: Users },
     { href: "/configuracion", label: "Configuración", icon: Settings },
   ];
 

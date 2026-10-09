@@ -4,6 +4,8 @@ import { Plus, Search, FileImage, FileText } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { requireAuth } from "@/lib/auth";
 import ImageLightbox from "@/components/ImageLightbox";
+import ReferenciaEditModal from "@/components/ReferenciaEditModal";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 export default async function Referencias({
   searchParams,
@@ -32,7 +34,7 @@ export default async function Referencias({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Catálogo de Referencias</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Referencias</h1>
         <Link 
           href="/referencias/nuevo" 
           className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center w-full sm:w-auto shrink-0 gap-2"
@@ -56,7 +58,7 @@ export default async function Referencias({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {referencias.map((ref) => (
-          <div key={ref.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all flex flex-col">
+          <div key={ref.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all flex flex-col group">
             <div className="aspect-video bg-slate-50 relative flex items-center justify-center border-b border-gray-100 overflow-hidden">
               {ref.disenoArchivoUrl ? (
                 <ImageLightbox src={ref.disenoArchivoUrl} alt={ref.codigo} className="w-full h-full" />
@@ -66,18 +68,16 @@ export default async function Referencias({
                   <span className="text-xs font-medium">Sin diseño a mano</span>
                 </div>
               )}
-              
-              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700 shadow-sm">
-                ${ref.precioBase.toLocaleString()}
-              </div>
             </div>
             
             <div className="p-5 flex-1 flex flex-col">
-              <h2 className="text-lg font-bold text-slate-900 mb-2">{ref.codigo}</h2>
+              <div className="flex justify-between items-start mb-2">
+                <h2 className="text-lg font-bold text-slate-900 truncate pr-2">{ref.codigo}</h2>
+              </div>
               
               <div className="mt-auto pt-4 flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                  {ref._count.ordenes} órdenes
+                  {ref._count.ordenes} {ref._count.ordenes === 1 ? 'orden' : 'órdenes'}
                 </span>
                 
                 {ref.optitexArchivoUrl ? (
@@ -86,6 +86,23 @@ export default async function Referencias({
                   </a>
                 ) : (
                   <span className="text-xs text-slate-400">Sin archivo optitex</span>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-slate-50 opacity-0 group-hover:opacity-100 transition-opacity">
+                <ReferenciaEditModal referencia={ref} />
+                {ref._count.ordenes === 0 && (
+                  <DeleteConfirmModal 
+                    action={async () => {
+                      "use server";
+                      const { deleteReferencia } = await import("@/app/actions/referenciaActions");
+                      await deleteReferencia(ref.id);
+                    }}
+                    title="¿Eliminar Referencia?"
+                    description={`Estás a punto de eliminar la referencia ${ref.codigo}.`}
+                    buttonText="Eliminar"
+                    iconOnly={true}
+                  />
                 )}
               </div>
             </div>

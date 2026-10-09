@@ -4,26 +4,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { createCliente } from "@/app/actions/clienteActions";
+
 export default async function NuevoCliente() {
   const { empresa } = await requireAuth();
-
-  async function createCliente(formData: FormData) {
-    "use server";
-    const nombre = formData.get("nombre") as string;
-    const telefono = formData.get("telefono") as string;
-
-    if (!nombre) return;
-
-    await prisma.cliente.create({
-      data: {
-        nombre,
-        telefono,
-        empresaId: empresa.id
-      }
-    });
-
-    redirect("/clientes");
-  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">

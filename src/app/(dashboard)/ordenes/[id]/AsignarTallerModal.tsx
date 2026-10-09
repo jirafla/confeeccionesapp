@@ -8,13 +8,11 @@ import { Factory, X, Plus } from "lucide-react";
 export default function AsignarTallerModal({
   ordenId,
   talleres,
-  precioSugerido,
   pendientes,
   isFirst = false
 }: {
   ordenId: string;
   talleres: any[];
-  precioSugerido: number;
   pendientes: number;
   isFirst?: boolean;
 }) {
@@ -93,7 +91,6 @@ export default function AsignarTallerModal({
                     type="number" 
                     name="precioUnitario" 
                     required 
-                    defaultValue={precioSugerido}
                     className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
                   />
                 </div>

@@ -37,19 +37,6 @@ export default function NuevaReferencia() {
           />
         </div>
 
-        <div>
-          <label htmlFor="precioBase" className="block text-sm font-semibold text-slate-700 mb-2">Precio Base de Confección ($) <span className="text-red-500">*</span></label>
-          <input 
-            type="number" 
-            name="precioBase" 
-            id="precioBase" 
-            required 
-            placeholder="Ej. 2500"
-            className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-          />
-          <p className="text-xs text-slate-500 mt-1">Este precio será el sugerido al asignar talleres.</p>
-        </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
           <div>
             <label htmlFor="disenoArchivo" className="block text-sm font-semibold text-slate-700 mb-2">Archivo Diseño a Mano (Imagen)</label>
