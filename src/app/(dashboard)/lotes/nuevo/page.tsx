@@ -2,8 +2,11 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import LoteForm from "@/components/LoteForm";
 
+import { requireAuth } from "@/lib/auth";
+
 export default async function NuevoLote() {
-  const talleres = await prisma.taller.findMany({ orderBy: { nombre: 'asc' } });
+  const { empresa } = await requireAuth();
+  const talleres = await prisma.taller.findMany({ where: { empresaId: empresa.id }, orderBy: { nombre: 'asc' } });
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">

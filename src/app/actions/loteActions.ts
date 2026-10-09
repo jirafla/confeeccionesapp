@@ -4,7 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { requireAuth } from "@/lib/auth";
+
 export async function createLote(formData: FormData) {
+  const { empresa } = await requireAuth();
+
   await prisma.lote.create({
     data: {
       numeroLote: formData.get("referencia") as string,
@@ -15,6 +19,7 @@ export async function createLote(formData: FormData) {
       fechaEntregaPactada: new Date(formData.get("fechaEntregaPactada") as string),
       tallerId: formData.get("tallerId") as string,
       insumosEntregados: formData.get("insumosEntregados") as string,
+      empresaId: empresa.id
     }
   });
 
@@ -23,10 +28,12 @@ export async function createLote(formData: FormData) {
 
 export async function searchReferencias(query: string) {
   if (!query || query.length < 2) return [];
+  const { empresa } = await requireAuth();
   
   // Get unique references that match the query
   const lotes = await prisma.lote.findMany({
     where: {
+      empresaId: empresa.id,
       numeroLote: {
         contains: query
       }

@@ -2,7 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
-export default function NuevoTaller() {
+import { requireAuth } from "@/lib/auth";
+
+export default async function NuevoTaller() {
+  const { empresa } = await requireAuth();
+
   async function createTaller(formData: FormData) {
     "use server";
     const nombre = formData.get("nombre") as string;
@@ -15,7 +19,8 @@ export default function NuevoTaller() {
       data: {
         nombre,
         telefono,
-        direccion
+        direccion,
+        empresaId: empresa.id
       }
     });
 

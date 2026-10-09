@@ -8,30 +8,63 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Empresa {
+  id          String    @id @default(cuid())
+  nombre      String
+  nit         String?   
+  
+  usuarios    Usuario[]
+  talleres    Taller[]
+  lotes       Lote[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Usuario {
+  id          String   @id 
+  email       String   @unique
+  nombre      String?
+  rol         String   @default("ADMIN") 
+  
+  empresaId   String
+  empresa     Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Taller {
   id        String   @id @default(cuid())
   nombre    String
   telefono  String?
   direccion String?
   lotes     Lote[]
+  
+  empresaId String
+  empresa   Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Lote {
   id                    String   @id @default(cuid())
-  numeroLote            String   // Reference or lot number
+  numeroLote            String   
   tipoPrenda            String
   cantidad              Int
   precioUnitario        Float
   fechaInicio           DateTime
   fechaEntregaPactada   DateTime
-  estado                String   @default("EN_PROCESO") // EN_PROCESO, DEMORADO, ENTREGADO, CANCELADO
+  estado                String   @default("EN_PROCESO")
   pagado                Boolean  @default(false)
   insumosEntregados     String?  
   
   tallerId              String
   taller                Taller   @relation(fields: [tallerId], references: [id])
+  
+  empresaId             String
+  empresa               Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   
   abonos                Abono[]
 

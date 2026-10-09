@@ -15,9 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full antialiased">
       <body className={`${inter.className} h-full bg-[#F8FAFC]`}>
-        <AppShell>
-          {children}
-        </AppShell>
+        {children}
         <Toaster richColors position="top-right" />
       </body>
     </html>

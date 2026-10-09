@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Factory, PackageSearch, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, Factory, PackageSearch, FileSpreadsheet, LogOut, Settings } from "lucide-react";
+import { logout } from "@/app/login/actions";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -12,6 +13,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: "/talleres", label: "Talleres", icon: Factory },
     { href: "/lotes", label: "Lotes", icon: PackageSearch },
     { href: "/reportes", label: "Reportes", icon: FileSpreadsheet },
+    { href: "/configuracion", label: "Configuración", icon: Settings },
   ];
 
   return (
@@ -49,9 +51,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         
         <div className="p-6 border-t border-slate-50">
+          <form action={logout}>
+            <button type="submit" className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors mb-4">
+              <LogOut className="w-4 h-4" />
+              Cerrar Sesión
+            </button>
+          </form>
           <div className="bg-slate-50 p-4 rounded-2xl">
              <p className="text-xs text-slate-500 font-medium">Gestión de Producción</p>
-             <p className="text-[10px] text-slate-400 mt-1">v1.0.0</p>
+             <p className="text-[10px] text-slate-400 mt-1">v2.0.0 (SaaS)</p>
           </div>
         </div>
       </aside>

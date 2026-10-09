@@ -5,24 +5,27 @@ import LoteEditModal from "@/components/LoteEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import AbonosManager from "@/components/AbonosManager";
 
+import { requireAuth } from "@/lib/auth";
+
 export default async function DetalleLote({ params }: { params: { id: string } }) {
+  const { empresa } = await requireAuth();
   const { id } = await params;
   
   const lote = await prisma.lote.findUnique({
-    where: { id },
+    where: { id, empresaId: empresa.id },
     include: { taller: true, abonos: { orderBy: { fecha: 'desc' } } }
   });
 
   if (!lote) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500 font-medium">Lote no encontrado.</p>
+        <p className="text-slate-500 font-medium">Lote no encontrado o no tienes permiso.</p>
         <Link href="/lotes" className="text-blue-600 hover:underline mt-2 inline-block">Volver a Lotes</Link>
       </div>
     );
   }
 
-  const talleres = await prisma.taller.findMany({ orderBy: { nombre: 'asc' } });
+  const talleres = await prisma.taller.findMany({ where: { empresaId: empresa.id }, orderBy: { nombre: 'asc' } });
 
   async function updateLote(formData: FormData) {
     "use server";

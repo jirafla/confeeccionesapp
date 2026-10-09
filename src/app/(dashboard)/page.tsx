@@ -2,13 +2,17 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import DashboardCharts from "@/components/DashboardCharts";
+import { requireAuth } from "@/lib/auth";
 
 export default async function Home() {
+  const { empresa } = await requireAuth();
+
   const [totalTalleres, lotes, lotesDemorados] = await Promise.all([
-    prisma.taller.count(),
-    prisma.lote.findMany({ include: { abonos: true } }),
+    prisma.taller.count({ where: { empresaId: empresa.id } }),
+    prisma.lote.findMany({ where: { empresaId: empresa.id }, include: { abonos: true } }),
     prisma.lote.findMany({
       where: {
+        empresaId: empresa.id,
         estado: { not: "ENTREGADO" },
         fechaEntregaPactada: { lt: new Date() }
       },

@@ -4,21 +4,27 @@ import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
 import EmptyState from "@/components/EmptyState";
 
+import { requireAuth } from "@/lib/auth";
+
 export default async function Talleres({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }) {
+  const { empresa } = await requireAuth();
   const query = await searchParams;
   const q = query.q || "";
 
   const talleres = await prisma.taller.findMany({
-    where: q ? {
-      OR: [
-        { nombre: { contains: q } },
-        { telefono: { contains: q } }
-      ]
-    } : undefined,
+    where: {
+      empresaId: empresa.id,
+      ...(q ? {
+        OR: [
+          { nombre: { contains: q } },
+          { telefono: { contains: q } }
+        ]
+      } : {})
+    },
     include: {
       _count: {
         select: { lotes: true }

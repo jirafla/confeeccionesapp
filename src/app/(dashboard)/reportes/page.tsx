@@ -5,17 +5,21 @@ import SearchInput from "@/components/SearchInput";
 import LotesFilter from "@/components/LotesFilter";
 import EmptyState from "@/components/EmptyState";
 
+import { requireAuth } from "@/lib/auth";
+
 export default async function Reportes({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; estado?: string }>;
 }) {
+  const { empresa } = await requireAuth();
   const query = await searchParams;
   const q = query.q || "";
   const estado = query.estado || "";
 
   const lotes = await prisma.lote.findMany({
     where: {
+      empresaId: empresa.id,
       AND: [
         q ? {
           OR: [

@@ -5,11 +5,14 @@ import TallerEditModal from "@/components/TallerEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import EmptyState from "@/components/EmptyState";
 
+import { requireAuth } from "@/lib/auth";
+
 export default async function DetalleTaller({ params }: { params: { id: string } }) {
+  const { empresa } = await requireAuth();
   const { id } = await params;
   
   const taller = await prisma.taller.findUnique({
-    where: { id },
+    where: { id, empresaId: empresa.id },
     include: {
       lotes: {
         orderBy: { createdAt: 'desc' }
@@ -20,7 +23,7 @@ export default async function DetalleTaller({ params }: { params: { id: string }
   if (!taller) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500 font-medium">Taller no encontrado.</p>
+        <p className="text-slate-500 font-medium">Taller no encontrado o no tienes permiso.</p>
         <Link href="/talleres" className="text-blue-600 hover:underline mt-2 inline-block">Volver a Talleres</Link>
       </div>
     );
