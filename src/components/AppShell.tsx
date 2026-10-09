@@ -1,15 +1,42 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Factory, Users, Shirt, PackageSearch, FileSpreadsheet, Settings, LogOut } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Factory, 
+  Users, 
+  Shirt, 
+  PackageSearch, 
+  Settings, 
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen
+} from "lucide-react";
 import { logout } from "@/app/login/actions";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("sidebar_collapsed");
+    if (saved !== null) {
+      setIsCollapsed(saved === "true");
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("sidebar_collapsed", String(next));
+      return next;
+    });
+  };
 
   const links = [
-    { href: "/", label: "Dashboard / Reportes", icon: LayoutDashboard },
+    { href: "/", label: "Panel", icon: LayoutDashboard },
     { href: "/ordenes", label: "Órdenes", icon: PackageSearch },
     { href: "/referencias", label: "Referencias", icon: Shirt },
     { href: "/talleres", label: "Talleres", icon: Factory },
@@ -20,17 +47,37 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-[#F8FAFC]">
       {/* Desktop Sidebar */}
-      <aside className="hidden sm:flex flex-col w-64 bg-white border-r border-slate-100 flex-shrink-0">
-        <div className="h-20 flex items-center px-8 border-b border-slate-50">
-          <Link href="/" className="font-bold text-xl tracking-tight text-slate-900 flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
+      <aside 
+        className={`hidden sm:flex flex-col ${
+          isCollapsed ? "w-20" : "w-64"
+        } bg-white border-r border-slate-100 flex-shrink-0 transition-all duration-300 ease-in-out`}
+      >
+        <div 
+          className={`h-20 flex items-center ${
+            isCollapsed ? "justify-center flex-col gap-1 px-2" : "justify-between px-6"
+          } border-b border-slate-50`}
+        >
+          <Link 
+            href="/" 
+            className="font-bold text-xl tracking-tight text-slate-900 flex items-center gap-3 min-w-0" 
+            title="Confección"
+          >
+            <div className="w-8 h-8 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold shadow-md shadow-indigo-600/20 shrink-0">
               C
             </div>
-            Confección
+            {!isCollapsed && <span className="truncate">Confección</span>}
           </Link>
+
+          <button
+            onClick={toggleCollapsed}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            title={isCollapsed ? "Expandir menú" : "Contraer menú"}
+          >
+            {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+          </button>
         </div>
         
-        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
+        <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-4"} py-6 space-y-1.5 overflow-y-auto`}>
           {links.map((link) => {
             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
             const Icon = link.icon;
@@ -38,30 +85,41 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 ${
+                title={isCollapsed ? link.label : undefined}
+                className={`flex items-center ${
+                  isCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl"
+                } transition-all duration-200 ${
                   isActive 
                     ? "bg-indigo-50 text-indigo-600 font-semibold shadow-sm" 
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
-                {link.label}
+                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
+                {!isCollapsed && <span className="truncate text-sm">{link.label}</span>}
               </Link>
-            )
+            );
           })}
         </nav>
         
-        <div className="p-6 border-t border-slate-50">
+        <div className={`${isCollapsed ? "p-3" : "p-6"} border-t border-slate-50`}>
           <form action={logout}>
-            <button type="submit" className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors mb-4">
-              <LogOut className="w-4 h-4" />
-              Cerrar Sesión
+            <button 
+              type="submit" 
+              title={isCollapsed ? "Cerrar Sesión" : undefined}
+              className={`w-full flex items-center justify-center ${
+                isCollapsed ? "p-3" : "gap-2 px-4 py-3"
+              } text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors mb-3`}
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              {!isCollapsed && <span>Cerrar Sesión</span>}
             </button>
           </form>
-          <div className="bg-slate-50 p-4 rounded-2xl">
-             <p className="text-xs text-slate-500 font-medium">Gestión de Producción</p>
-             <p className="text-[10px] text-slate-400 mt-1">v2.0.0 (SaaS)</p>
-          </div>
+          {!isCollapsed && (
+            <div className="bg-slate-50 p-4 rounded-2xl">
+               <p className="text-xs text-slate-500 font-medium">Gestión de Producción</p>
+               <p className="text-[10px] text-slate-400 mt-1">v2.0.0 (SaaS)</p>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -104,7 +162,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
                 <span className={`text-[10px] ${isActive ? "font-bold" : "font-medium"}`}>{link.label}</span>
               </Link>
-            )
+            );
           })}
         </div>
       </nav>
