@@ -19,7 +19,7 @@ export default function DashboardCharts({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <h3 className="text-sm font-bold text-slate-900 mb-6">Estado de los Lotes</h3>
+        <h3 className="text-sm font-bold text-slate-900 mb-6">Estado de las Órdenes</h3>
         <div className="h-[250px] w-full">
           {lotesPorEstado.reduce((a, b) => a + b.value, 0) > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -38,7 +38,7 @@ export default function DashboardCharts({
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: any) => [`${value} lotes`, "Cantidad"]}
+                  formatter={(value: any) => [`${value} órdenes`, "Cantidad"]}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend verticalAlign="bottom" height={36} />

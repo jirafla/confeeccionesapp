@@ -65,7 +65,7 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
         </div>
       </div>
 
-      <OrdenTracking ordenId={orden.id} estadoActual={orden.estado} />
+      <OrdenTracking estadoActual={orden.estado} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* INFO DE LA ORDEN */}
@@ -145,7 +145,7 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
               <div className="w-full text-left bg-slate-50 p-4 rounded-xl border border-slate-100 mb-2">
                 <h4 className="font-bold text-slate-700 mb-3 uppercase text-xs tracking-wider">Cantidades por Variante:</h4>
                 <ul className="space-y-2">
-                  {orden.coloresDetalles.split(',').map((line, i) => (
+                  {(orden.coloresDetalles || "").split(',').filter(Boolean).map((line, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                       <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                       {line.trim()}

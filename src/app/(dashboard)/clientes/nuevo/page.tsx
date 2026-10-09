@@ -18,7 +18,10 @@ export default async function NuevoCliente() {
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Registrar Cliente</h1>
       </div>
       
-      <form action={createCliente} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+      <form action={async (formData) => {
+        "use server";
+        await createCliente(formData);
+      }} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
         <div>
           <label htmlFor="nombre" className="block text-sm font-semibold text-slate-700 mb-2">Nombre del Cliente / Empresa <span className="text-red-500">*</span></label>
           <input 

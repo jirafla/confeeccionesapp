@@ -4,7 +4,6 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { v4 as uuidv4 } from 'uuid'; // need to install uuid or just use crypto
 
 export async function createReferencia(formData: FormData) {
   const { empresa } = await requireAuth();
