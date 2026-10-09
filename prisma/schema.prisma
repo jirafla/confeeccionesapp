@@ -80,9 +80,11 @@ model Referencia {
 
 model OrdenProduccion {
   id                String   @id @default(cuid())
+  consecutivo       Int      @default(1) // Nro. de orden dentro de la referencia: 5370-1, 5370-2...
   cantidadTotal     Int
   coloresDetalles   String?
-  estado            String   @default("DISENO") // DISENO, CORTE, CONFECCION, ENTREGADO
+  estado            String   @default("CORTE") // CORTE, CONFECCION, ENTREGADO
+  fechaEntregado    DateTime?
 
   clienteId         String
   cliente           Cliente    @relation(fields: [clienteId], references: [id])
