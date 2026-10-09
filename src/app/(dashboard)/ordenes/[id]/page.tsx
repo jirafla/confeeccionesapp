@@ -6,7 +6,7 @@ import ConciliarLoteModal from "./ConciliarLoteModal";
 import OrdenTracking from "./OrdenTracking";
 import ImageLightbox from "@/components/ImageLightbox";
 import AsignarTallerModal from "./AsignarTallerModal";
-import BotonEnviarConfeccion from "./BotonEnviarConfeccion";
+import BotonAvanzarEstado from "./BotonAvanzarEstado";
 
 export default async function OrdenDetail({ params }: { params: { id: string } }) {
   const { empresa } = await requireAuth();
@@ -113,14 +113,14 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
 
         {/* ASIGNACIONES (LOTES) */}
         <div className="lg:col-span-2 space-y-6">
-          {(orden.estado === 'DISENO' || orden.estado === 'CORTE') && (
+          {orden.estado === 'DISENO' && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center flex flex-col items-center">
-              <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+              <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               </div>
-              <h3 className="font-bold text-xl text-slate-900 mb-2">Etapa de {orden.estado === 'DISENO' ? 'Diseño' : 'Corte'}</h3>
+              <h3 className="font-bold text-xl text-slate-900 mb-2">Etapa de Diseño / Preparación</h3>
               <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-                Revisa los detalles y cantidades a producir. Cuando las piezas estén cortadas y listas para enviarse a los talleres, haz clic en el botón inferior para avanzar a la etapa de Confección.
+                La orden acaba de ser creada. Revisa los detalles, cantidades y variables antes de pasarla al equipo de corte.
               </p>
               
               <div className="w-full text-left bg-slate-50 p-4 rounded-xl border border-slate-100 mb-2">
@@ -135,7 +135,33 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
                 </ul>
               </div>
 
-              <BotonEnviarConfeccion ordenId={orden.id} />
+              <BotonAvanzarEstado ordenId={orden.id} siguienteEstado="CORTE" label="Enviar a Corte" />
+            </div>
+          )}
+
+          {orden.estado === 'CORTE' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center flex flex-col items-center">
+              <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+              </div>
+              <h3 className="font-bold text-xl text-slate-900 mb-2">Etapa de Corte</h3>
+              <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
+                Revisa las piezas que deben cortarse. Cuando la tela esté lista y cortada para ser despachada a los talleres, haz clic para avanzar a la etapa de Confección.
+              </p>
+              
+              <div className="w-full text-left bg-slate-50 p-4 rounded-xl border border-slate-100 mb-2">
+                <h4 className="font-bold text-slate-700 mb-3 uppercase text-xs tracking-wider">Cantidades por Variante:</h4>
+                <ul className="space-y-2">
+                  {orden.coloresDetalles.split(',').map((line, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      {line.trim()}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <BotonAvanzarEstado ordenId={orden.id} siguienteEstado="CONFECCION" label="Mover a Confección" />
             </div>
           )}
 
