@@ -2,10 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import Link from "next/link";
 import { ArrowLeft, Factory, CheckCircle2, AlertTriangle, PlayCircle } from "lucide-react";
-import AsignarTallerForm from "./AsignarTallerForm";
 import ConciliarLoteModal from "./ConciliarLoteModal";
 import OrdenTracking from "./OrdenTracking";
 import ImageLightbox from "@/components/ImageLightbox";
+import AsignarTallerModal from "./AsignarTallerModal";
+import BotonEnviarConfeccion from "./BotonEnviarConfeccion";
 
 export default async function OrdenDetail({ params }: { params: { id: string } }) {
   const { empresa } = await requireAuth();
@@ -112,82 +113,117 @@ export default async function OrdenDetail({ params }: { params: { id: string } }
 
         {/* ASIGNACIONES (LOTES) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-semibold text-slate-900 flex items-center gap-2">
-                <Factory className="w-5 h-5 text-slate-400" />
-                Lotes en Talleres ({orden.asignaciones.length})
-              </h2>
+          {(orden.estado === 'DISENO' || orden.estado === 'CORTE') && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center flex flex-col items-center">
+              <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+              </div>
+              <h3 className="font-bold text-xl text-slate-900 mb-2">Etapa de {orden.estado === 'DISENO' ? 'Diseño' : 'Corte'}</h3>
+              <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
+                Revisa los detalles y cantidades a producir. Cuando las piezas estén cortadas y listas para enviarse a los talleres, haz clic en el botón inferior para avanzar a la etapa de Confección.
+              </p>
+              
+              <div className="w-full text-left bg-slate-50 p-4 rounded-xl border border-slate-100 mb-2">
+                <h4 className="font-bold text-slate-700 mb-3 uppercase text-xs tracking-wider">Cantidades por Variante:</h4>
+                <ul className="space-y-2">
+                  {orden.coloresDetalles.split(',').map((line, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      {line.trim()}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <BotonEnviarConfeccion ordenId={orden.id} />
             </div>
-            
-            {orden.asignaciones.length === 0 ? (
-              <div className="p-12 text-center flex flex-col items-center">
-                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                  <PlayCircle className="w-8 h-8 text-blue-500" />
-                </div>
-                <h3 className="font-bold text-slate-900 mb-1">No hay talleres asignados</h3>
-                <p className="text-sm text-slate-500 max-w-sm mb-6">Esta orden aún no ha pasado a etapa de confección. Asigna prendas a un taller para comenzar.</p>
+          )}
+
+          {(orden.estado === 'CONFECCION' || orden.estado === 'ENTREGADO') && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                <h2 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Factory className="w-5 h-5 text-slate-400" />
+                  Lotes en Talleres ({orden.asignaciones.length})
+                </h2>
+                {pendientesPorAsignar > 0 && (
+                  <AsignarTallerModal 
+                    ordenId={orden.id} 
+                    talleres={talleres} 
+                    precioSugerido={orden.referencia.precioBase} 
+                    pendientes={pendientesPorAsignar} 
+                  />
+                )}
               </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {orden.asignaciones.map((asig) => (
-                  <div key={asig.id} className="p-5 hover:bg-slate-50 transition-colors">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-bold text-slate-900 text-lg">{asig.taller.nombre}</h3>
-                        <p className="text-sm text-slate-500 font-medium">Envío: {asig.fechaEnvio.toLocaleDateString()} • Esperado: {asig.fechaEntregaEsperada.toLocaleDateString()}</p>
-                      </div>
-                      <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-lg
-                        ${asig.estadoLote === 'ENTREGADO' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                        {asig.estadoLote}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4 text-sm mt-4 p-4 bg-slate-100/50 rounded-xl border border-slate-100">
-                      <div className="flex-1 min-w-[100px]">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Asignadas</p>
-                        <p className="font-bold text-slate-900">{asig.cantidadAsignada} uds</p>
-                      </div>
-                      <div className="flex-1 min-w-[100px]">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Precio U.</p>
-                        <p className="font-bold text-slate-900">${asig.precioUnitario}</p>
-                      </div>
-                      <div className="flex-1 min-w-[100px]">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Total Pago</p>
-                        <p className="font-bold text-indigo-700">${asig.cantidadAsignada * asig.precioUnitario}</p>
-                      </div>
-                      <div className="flex-1 min-w-[100px]">
-                        <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Entregadas</p>
-                        {asig.estadoLote === 'ENTREGADO' ? (
-                           <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
-                             <CheckCircle2 className="w-4 h-4" />
-                             {asig.cantidadBuena} buenas
-                             {asig.reprocesos! > 0 && <span className="text-amber-500 text-xs ml-1">({asig.reprocesos} rep)</span>}
-                           </div>
-                        ) : (
-                          <p className="font-semibold text-slate-400">Pendiente...</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {asig.estadoLote === 'ASIGNADO' && (
-                      <div className="mt-4 flex justify-end">
-                        <ConciliarLoteModal asignacion={asig} />
-                      </div>
-                    )}
+              
+              {orden.asignaciones.length === 0 ? (
+                <div className="p-12 text-center flex flex-col items-center">
+                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                    <PlayCircle className="w-8 h-8 text-blue-500" />
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <h3 className="font-bold text-slate-900 mb-1">No hay talleres asignados</h3>
+                  <p className="text-sm text-slate-500 max-w-sm mb-6">Asigna el primer lote de prendas a un taller para comenzar con la confección.</p>
+                  
+                  <AsignarTallerModal 
+                    ordenId={orden.id} 
+                    talleres={talleres} 
+                    precioSugerido={orden.referencia.precioBase} 
+                    pendientes={pendientesPorAsignar} 
+                    isFirst={true}
+                  />
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {orden.asignaciones.map((asig) => (
+                    <div key={asig.id} className="p-5 hover:bg-slate-50 transition-colors">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-lg">{asig.taller.nombre}</h3>
+                          <p className="text-sm text-slate-500 font-medium">Envío: {asig.fechaEnvio.toLocaleDateString()} • Esperado: {asig.fechaEntregaEsperada.toLocaleDateString()}</p>
+                        </div>
+                        <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-lg
+                          ${asig.estadoLote === 'ENTREGADO' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                          {asig.estadoLote}
+                        </span>
+                      </div>
 
-          {pendientesPorAsignar > 0 && (
-            <AsignarTallerForm 
-              ordenId={orden.id} 
-              talleres={talleres} 
-              precioSugerido={orden.referencia.precioBase} 
-              pendientes={pendientesPorAsignar} 
-            />
+                      <div className="flex flex-wrap gap-4 text-sm mt-4 p-4 bg-slate-100/50 rounded-xl border border-slate-100">
+                        <div className="flex-1 min-w-[100px]">
+                          <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Asignadas</p>
+                          <p className="font-bold text-slate-900">{asig.cantidadAsignada} uds</p>
+                        </div>
+                        <div className="flex-1 min-w-[100px]">
+                          <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Precio U.</p>
+                          <p className="font-bold text-slate-900">${asig.precioUnitario}</p>
+                        </div>
+                        <div className="flex-1 min-w-[100px]">
+                          <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Total Pago</p>
+                          <p className="font-bold text-indigo-700">${asig.cantidadAsignada * asig.precioUnitario}</p>
+                        </div>
+                        <div className="flex-1 min-w-[100px]">
+                          <p className="text-slate-500 text-xs font-bold uppercase mb-0.5">Entregadas</p>
+                          {asig.estadoLote === 'ENTREGADO' ? (
+                             <div className="flex items-center gap-1.5 text-emerald-600 font-bold">
+                               <CheckCircle2 className="w-4 h-4" />
+                               {asig.cantidadBuena} buenas
+                               {asig.reprocesos! > 0 && <span className="text-amber-500 text-xs ml-1">({asig.reprocesos} rep)</span>}
+                             </div>
+                          ) : (
+                            <p className="font-semibold text-slate-400">Pendiente...</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {asig.estadoLote === 'ASIGNADO' && (
+                        <div className="mt-4 flex justify-end">
+                          <ConciliarLoteModal asignacion={asig} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

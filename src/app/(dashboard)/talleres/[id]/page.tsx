@@ -60,7 +60,7 @@ export default async function DetalleTaller({ params }: { params: { id: string }
             <div className="space-y-3 mt-6">
               <TallerEditModal taller={taller} />
               
-              {taller.lotes.length === 0 && (
+              {taller.asignaciones.length === 0 && (
                 <DeleteConfirmModal 
                   action={async () => {
                     "use server";

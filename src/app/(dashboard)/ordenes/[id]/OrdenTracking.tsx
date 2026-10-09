@@ -1,9 +1,6 @@
 "use client";
 
-import { updateOrdenEstado } from "@/app/actions/ordenesActions";
-import { Check, ChevronRight } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { Check } from "lucide-react";
 
 const ESTADOS = [
   { id: "DISENO", label: "Diseño" },
@@ -13,28 +10,11 @@ const ESTADOS = [
 ];
 
 export default function OrdenTracking({ 
-  ordenId, 
   estadoActual 
 }: { 
-  ordenId: string; 
   estadoActual: string; 
 }) {
-  const [estado, setEstado] = useState(estadoActual);
-  const [isPending, setIsPending] = useState(false);
-
-  const currentIndex = ESTADOS.findIndex(e => e.id === estado);
-
-  const handleUpdate = async (nuevoEstadoId: string) => {
-    setIsPending(true);
-    const res = await updateOrdenEstado(ordenId, nuevoEstadoId);
-    if (res?.error) {
-      toast.error(res.error);
-    } else {
-      setEstado(nuevoEstadoId);
-      toast.success("Estado actualizado");
-    }
-    setIsPending(false);
-  };
+  const currentIndex = ESTADOS.findIndex(e => e.id === estadoActual);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
@@ -52,24 +32,22 @@ export default function OrdenTracking({
           const isCurrent = index === currentIndex;
           
           return (
-            <button
+            <div
               key={e.id}
-              disabled={isPending}
-              onClick={() => handleUpdate(e.id)}
-              className="relative z-10 flex sm:flex-col items-center gap-3 sm:gap-2 group w-full sm:w-auto mb-4 sm:mb-0 text-left sm:text-center"
+              className="relative z-10 flex sm:flex-col items-center gap-3 sm:gap-2 w-full sm:w-auto mb-4 sm:mb-0 text-left sm:text-center"
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 transition-colors
                 ${isCompleted ? 'bg-blue-500 border-blue-500 text-white' : 
                   isCurrent ? 'bg-white border-blue-500 text-blue-600 shadow-[0_0_0_4px_rgba(59,130,246,0.1)]' : 
-                  'bg-white border-slate-200 text-slate-300 group-hover:border-blue-200'}`}
+                  'bg-white border-slate-200 text-slate-300'}`}
               >
                 {isCompleted ? <Check className="w-4 h-4" /> : <span className="text-xs font-bold">{index + 1}</span>}
               </div>
               <span className={`text-xs font-bold uppercase tracking-wider
-                ${isCurrent ? 'text-blue-600' : isCompleted ? 'text-slate-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                ${isCurrent ? 'text-blue-600' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>
                 {e.label}
               </span>
-            </button>
+            </div>
           );
         })}
       </div>

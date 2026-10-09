@@ -22,7 +22,7 @@ export async function createOrden(formData: FormData) {
       referenciaId,
       cantidadTotal,
       coloresDetalles,
-      estado: "DISENO",
+      estado: "CORTE",
       empresaId: empresa.id
     }
   });
@@ -41,12 +41,6 @@ export async function updateOrdenEstado(id: string, estado: string) {
   });
 
   if (!orden) return { error: "Orden no encontrada." };
-
-  if (estado === "CONFECCION") {
-    if (orden.asignaciones.length === 0) {
-      return { error: "No puedes pasar a confección sin haber asignado piezas a ningún taller." };
-    }
-  }
 
   await prisma.ordenProduccion.update({
     where: { id },
