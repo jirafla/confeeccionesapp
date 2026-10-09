@@ -20,7 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-[#F8FAFC]">
       {/* Desktop Sidebar */}
-      <aside className="hidden sm:flex flex-col w-64 bg-white border-r border-slate-100 flex-shrink-0 z-10">
+      <aside className="hidden sm:flex flex-col w-64 bg-white border-r border-slate-100 flex-shrink-0">
         <div className="h-20 flex items-center px-8 border-b border-slate-50">
           <Link href="/" className="font-bold text-xl tracking-tight text-slate-900 flex items-center gap-3">
             <div className="w-8 h-8 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">

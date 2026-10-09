@@ -30,7 +30,11 @@ export default async function Talleres({
         select: { asignaciones: true }
       }
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: {
+      asignaciones: {
+        _count: 'desc'
+      }
+    }
   });
 
   return (
