@@ -85,7 +85,11 @@ export async function marcarOrdenEntregada(id: string) {
 }
 
 export async function deleteOrden(id: string) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const { canDelete } = await import("@/lib/permissions");
+  if (!canDelete(user.rol)) {
+    return { error: "Solo un Administrador puede eliminar órdenes." };
+  }
 
   const orden = await prisma.ordenProduccion.findUnique({
     where: { id, empresaId: empresa.id },
@@ -127,12 +131,15 @@ export async function avanzarAConfeccion(formData: FormData) {
 
 export async function guardarCostosMateriales(ordenId: string, costosMateriales: string) {
   try {
-    const { empresa } = await requireAuth();
+    const { user, empresa } = await requireAuth();
+    const { canViewCosts } = await import("@/lib/permissions");
+    if (!canViewCosts(user.rol)) {
+      return { error: "No tienes permiso para gestionar costos." };
+    }
     await prisma.ordenProduccion.update({
       where: { id: ordenId, empresaId: empresa.id },
       data: { costosMateriales }
     });
-    // no need to revalidate path aggressively if we keep client state, but good to have
     return { success: true };
   } catch (error: any) {
     return { error: "No se pudo guardar los costos." };

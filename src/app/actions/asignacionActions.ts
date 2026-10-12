@@ -9,7 +9,8 @@ export async function createAsignacion(ordenId: string, formData: FormData) {
 
   const tallerId = formData.get("tallerId") as string;
   const cantidadAsignada = parseInt(formData.get("cantidadAsignada") as string);
-  const precioUnitario = parseFloat(formData.get("precioUnitario") as string);
+  const precioRaw = formData.get("precioUnitario") as string;
+  const precioUnitario = precioRaw ? parseFloat(precioRaw) : 0;
   const fechaEnvio = new Date(formData.get("fechaEnvio") as string);
   const fechaEntregaEsperada = new Date(formData.get("fechaEntregaEsperada") as string);
   const insumosEntregados = formData.get("insumosEntregados") as string;

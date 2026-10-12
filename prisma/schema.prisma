@@ -13,11 +13,12 @@ model Empresa {
   nombre      String
   nit         String?   
   
-  usuarios    Usuario[]
-  talleres    Taller[]
-  clientes    Cliente[]
-  referencias Referencia[]
-  ordenes     OrdenProduccion[]
+  usuarios     Usuario[]
+  invitaciones Invitacion[]
+  talleres     Taller[]
+  clientes     Cliente[]
+  referencias  Referencia[]
+  ordenes      OrdenProduccion[]
   asignaciones Asignacion[]
 
   createdAt   DateTime  @default(now())
@@ -35,6 +36,21 @@ model Usuario {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Invitacion {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  email     String
+  nombre    String?
+  rol       String   @default("OPERADOR") // ADMIN, SUPERVISOR, OPERADOR
+  estado    String   @default("PENDIENTE") // PENDIENTE, ACEPTADA, REVOCADA
+  
+  empresaId String
+  empresa   Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Taller {

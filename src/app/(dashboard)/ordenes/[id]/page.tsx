@@ -12,12 +12,15 @@ import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import MobileAccordion from "@/components/MobileAccordion";
 import CalculadoraCostos from "./CalculadoraCostos";
 import { nombreOrden, estadoOrden, parseVariantes, parseTelas, parseInsumos } from "@/lib/ordenes";
+import { canViewCosts, canDelete } from "@/lib/permissions";
 
 const fmtFecha = (d: Date) => d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 const fmtDinero = (n: number) => `$${n.toLocaleString("es-CO")}`;
 
 export default async function OrdenDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const mostrarPrecios = canViewCosts(user.rol);
+  const permiteEliminar = canDelete(user.rol);
   const { id } = await params;
 
   const orden = await prisma.ordenProduccion.findUnique({
@@ -76,7 +79,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {orden.asignaciones.length === 0 && (
+        {permiteEliminar && orden.asignaciones.length === 0 && (
           <div className="shrink-0">
             <DeleteConfirmModal
               action={async () => {
@@ -144,10 +147,10 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                 </div>
               )}
 
-              {(orden.precioCorte !== null || orden.observacionesCorte) && (
+              {((mostrarPrecios && orden.precioCorte !== null) || orden.observacionesCorte) && (
                 <div className="pt-2 border-t border-slate-100">
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Detalles de Corte</p>
-                  {orden.precioCorte !== null && (
+                  {mostrarPrecios && orden.precioCorte !== null && (
                     <p className="text-sm flex justify-between mb-1.5"><span className="text-slate-500">Precio de corte:</span> <span className="font-bold text-slate-900">{fmtDinero(orden.precioCorte)}</span></p>
                   )}
                   {orden.observacionesCorte && (
@@ -254,7 +257,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                 </div>
               </div>
 
-              <AvanzarAConfeccionForm ordenId={orden.id} cantidadTotal={orden.cantidadTotal} />
+              <AvanzarAConfeccionForm ordenId={orden.id} cantidadTotal={orden.cantidadTotal} mostrarPrecios={mostrarPrecios} />
             </div>
           )}
 
@@ -276,15 +279,17 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                 </div>
               </div>
 
-              <CalculadoraCostos 
-                ordenId={orden.id}
-                telas={telas}
-                insumos={insumos}
-                costoCorte={costoCorte}
-                costoConfeccion={costoConfeccion}
-                cantidadBuenas={buenas}
-                costosGuardados={orden.costosMateriales}
-              />
+              {mostrarPrecios && (
+                <CalculadoraCostos 
+                  ordenId={orden.id}
+                  telas={telas}
+                  insumos={insumos}
+                  costoCorte={costoCorte}
+                  costoConfeccion={costoConfeccion}
+                  cantidadBuenas={buenas}
+                  costosGuardados={orden.costosMateriales}
+                />
+              )}
             </div>
           )}
 
@@ -319,7 +324,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                   Lotes en talleres <span className="text-slate-400 font-medium">({orden.asignaciones.length})</span>
                 </h2>
                 {orden.estado === 'CONFECCION' && pendientesPorAsignar > 0 && orden.asignaciones.length > 0 && (
-                  <AsignarTallerModal ordenId={orden.id} talleres={talleres} pendientes={pendientesPorAsignar} />
+                  <AsignarTallerModal ordenId={orden.id} talleres={talleres} pendientes={pendientesPorAsignar} mostrarPrecios={mostrarPrecios} />
                 )}
               </div>
 
@@ -330,7 +335,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                   </div>
                   <h3 className="font-bold text-slate-900 mb-1">No hay talleres asignados</h3>
                   <p className="text-sm text-slate-500 max-w-sm">Asigna el primer lote de prendas a un taller para comenzar la confección.</p>
-                  <AsignarTallerModal ordenId={orden.id} talleres={talleres} pendientes={pendientesPorAsignar} isFirst={true} />
+                  <AsignarTallerModal ordenId={orden.id} talleres={talleres} pendientes={pendientesPorAsignar} isFirst={true} mostrarPrecios={mostrarPrecios} />
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">
@@ -360,21 +365,25 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm p-3 sm:p-4 bg-slate-50 rounded-xl">
+                        <div className={`grid grid-cols-2 ${mostrarPrecios ? "sm:grid-cols-4" : "sm:grid-cols-2"} gap-3 text-sm p-3 sm:p-4 bg-slate-50 rounded-xl`}>
                           <div>
                             <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Asignadas</p>
                             <p className="font-bold text-slate-900">{asig.cantidadAsignada} uds</p>
                           </div>
-                          <div>
-                            <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Precio U.</p>
-                            <p className="font-bold text-slate-900">{fmtDinero(asig.precioUnitario)}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Total pago</p>
-                            <p className="font-bold text-indigo-700">
-                              {fmtDinero((asig.cantidadAsignada * asig.precioUnitario) - (asig.descuentoReproceso || 0))}
-                            </p>
-                          </div>
+                          {mostrarPrecios && (
+                            <>
+                              <div>
+                                <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Precio U.</p>
+                                <p className="font-bold text-slate-900">{fmtDinero(asig.precioUnitario)}</p>
+                              </div>
+                              <div>
+                                <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Total pago</p>
+                                <p className="font-bold text-indigo-700">
+                                  {fmtDinero((asig.cantidadAsignada * asig.precioUnitario) - (asig.descuentoReproceso || 0))}
+                                </p>
+                              </div>
+                            </>
+                          )}
                           <div>
                             <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Recibidas</p>
                             {recibido ? (
@@ -388,7 +397,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                           </div>
                         </div>
                         
-                        {(asig.descuentoReproceso || 0) > 0 && (
+                        {mostrarPrecios && (asig.descuentoReproceso || 0) > 0 && (
                           <div className="mt-3 text-[11px] font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg inline-flex items-center ring-1 ring-rose-200">
                             Se descontaron {fmtDinero(asig.descuentoReproceso!)} (Ajuste Interno)
                           </div>
@@ -407,7 +416,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
 
                         {!recibido && (
                           <div className="mt-3 flex justify-end">
-                            <ConciliarLoteModal asignacion={asig} talleres={talleres} />
+                            <ConciliarLoteModal asignacion={asig} talleres={talleres} mostrarPrecios={mostrarPrecios} />
                           </div>
                         )}
                       </div>

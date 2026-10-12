@@ -6,6 +6,7 @@ import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import EmptyState from "@/components/EmptyState";
 
 import { requireAuth } from "@/lib/auth";
+import { canViewCosts, canDelete } from "@/lib/permissions";
 
 export default async function DetalleTaller({ 
   params, 
@@ -14,7 +15,9 @@ export default async function DetalleTaller({
   params: { id: string };
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const mostrarPrecios = canViewCosts(user.rol);
+  const permiteEliminar = canDelete(user.rol);
   const { id } = await params;
   const { q } = await searchParams;
   const taller = await prisma.taller.findUnique({
@@ -79,11 +82,13 @@ export default async function DetalleTaller({
             <div className="space-y-3 mt-6">
               <TallerEditModal taller={taller} />
               
-              {taller.asignaciones.length === 0 && (
+              {permiteEliminar && taller.asignaciones.length === 0 && (
                 <DeleteConfirmModal 
                   action={async () => {
                     "use server";
-                    await prisma.taller.delete({ where: { id: taller.id } });
+                    const { user: currentUser, empresa: currentEmpresa } = await requireAuth();
+                    if (!canDelete(currentUser.rol)) return;
+                    await prisma.taller.delete({ where: { id: taller.id, empresaId: currentEmpresa.id } });
                     redirect("/talleres");
                   }}
                   title="¿Eliminar taller?"
@@ -91,7 +96,7 @@ export default async function DetalleTaller({
                   buttonText="Eliminar Taller"
                 />
               )}
-              {taller.asignaciones.length > 0 && (
+              {permiteEliminar && taller.asignaciones.length > 0 && (
                  <p className="text-[10px] text-center text-slate-400 mt-2">
                    No puedes eliminar este taller porque tiene asignaciones.
                  </p>
@@ -167,10 +172,12 @@ export default async function DetalleTaller({
                             {asig.estadoLote === 'ENTREGADO' ? asig.cantidadBuena : '--'}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Total a Pagar</p>
-                          <p className="font-bold text-indigo-600">${(asig.cantidadAsignada * asig.precioUnitario).toLocaleString()}</p>
-                        </div>
+                        {mostrarPrecios && (
+                          <div>
+                            <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Total a Pagar</p>
+                            <p className="font-bold text-indigo-600">${(asig.cantidadAsignada * asig.precioUnitario).toLocaleString()}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Link>

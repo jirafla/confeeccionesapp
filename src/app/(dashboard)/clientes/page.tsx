@@ -5,13 +5,15 @@ import EmptyState from "@/components/EmptyState";
 import { requireAuth } from "@/lib/auth";
 import ClienteEditModal from "@/components/ClienteEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
+import { canDelete } from "@/lib/permissions";
 
 export default async function Clientes({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const permiteEliminar = canDelete(user.rol);
   const query = await searchParams;
   const q = query.q || "";
 
@@ -77,7 +79,7 @@ export default async function Clientes({
 
             <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-50">
               <ClienteEditModal cliente={cliente} />
-              {cliente._count.ordenes === 0 && (
+              {permiteEliminar && cliente._count.ordenes === 0 && (
                 <DeleteConfirmModal 
                   action={async () => {
                     "use server";

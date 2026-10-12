@@ -9,12 +9,14 @@ export default function AsignarTallerModal({
   ordenId,
   talleres,
   pendientes,
-  isFirst = false
+  isFirst = false,
+  mostrarPrecios = true,
 }: {
   ordenId: string;
   talleres: any[];
   pendientes: number;
   isFirst?: boolean;
+  mostrarPrecios?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -85,15 +87,19 @@ export default function AsignarTallerModal({
                     className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Precio Unitario Confección <span className="text-red-500">*</span></label>
-                  <input 
-                    type="number" 
-                    name="precioUnitario" 
-                    required 
-                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
-                  />
-                </div>
+                {mostrarPrecios ? (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Precio Unitario Confección <span className="text-red-500">*</span></label>
+                    <input 
+                      type="number" 
+                      name="precioUnitario" 
+                      required 
+                      className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
+                    />
+                  </div>
+                ) : (
+                  <input type="hidden" name="precioUnitario" value="0" />
+                )}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Fecha de Envío</label>
                   <input 

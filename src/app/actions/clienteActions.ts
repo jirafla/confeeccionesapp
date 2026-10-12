@@ -34,7 +34,11 @@ export async function updateCliente(id: string, formData: FormData) {
 }
 
 export async function deleteCliente(id: string) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const { canDelete } = await import("@/lib/permissions");
+  if (!canDelete(user.rol)) {
+    return { error: "Solo un Administrador puede eliminar clientes." };
+  }
 
   const c = await prisma.cliente.findUnique({
     where: { id, empresaId: empresa.id },

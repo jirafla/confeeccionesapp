@@ -6,13 +6,15 @@ import { requireAuth } from "@/lib/auth";
 import ReferenciaEditModal from "@/components/ReferenciaEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { downloadUrl } from "@/lib/ordenes";
+import { canDelete } from "@/lib/permissions";
 
 export default async function Referencias({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const permiteEliminar = canDelete(user.rol);
   const query = await searchParams;
   const q = query.q || "";
 
@@ -101,7 +103,7 @@ export default async function Referencias({
 
               <div className="flex items-center">
                 <ReferenciaEditModal referencia={ref} />
-                {ref._count.ordenes === 0 && (
+                {permiteEliminar && ref._count.ordenes === 0 && (
                   <DeleteConfirmModal
                     action={async () => {
                       "use server";

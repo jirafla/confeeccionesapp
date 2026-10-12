@@ -6,7 +6,15 @@ import { toast } from "sonner";
 import { CheckCircle2, X } from "lucide-react";
 import type { Taller } from "@prisma/client";
 
-export default function ConciliarLoteModal({ asignacion, talleres }: { asignacion: any; talleres: Taller[] }) {
+export default function ConciliarLoteModal({
+  asignacion,
+  talleres,
+  mostrarPrecios = true,
+}: {
+  asignacion: any;
+  talleres: Taller[];
+  mostrarPrecios?: boolean;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
@@ -110,7 +118,7 @@ export default function ConciliarLoteModal({ asignacion, talleres }: { asignacio
                       <input type="radio" name="accionReproceso" value="INTERNO" checked={accion === "INTERNO"} onChange={() => setAccion("INTERNO")} className="w-4 h-4 text-blue-600" />
                       <div>
                         <p className="font-semibold text-sm text-slate-900">Ajuste Interno (Arreglar en casa)</p>
-                        <p className="text-xs text-slate-500">Se asumen como buenas, pero puedes descontar del pago.</p>
+                        <p className="text-xs text-slate-500">Se asumen como buenas{mostrarPrecios ? ", pero puedes descontar del pago" : ""}.</p>
                       </div>
                     </label>
 
@@ -132,53 +140,55 @@ export default function ConciliarLoteModal({ asignacion, talleres }: { asignacio
                   </div>
 
                   {/* Campos dependientes */}
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
-                    {accion === "INTERNO" && (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Descuento al taller ($)</label>
-                        <input 
-                          type="number" 
-                          name="descuentoReproceso" 
-                          value={descuento || ""}
-                          onChange={e => setDescuento(Number(e.target.value))}
-                          placeholder="0"
-                          className="w-full rounded-lg border border-slate-200 bg-white text-sm py-2 px-3 font-medium" 
-                        />
-                        <p className="text-[10px] text-slate-400 mt-1">Este valor se descontará del total a pagar por esta asignación.</p>
-                      </div>
-                    )}
+                  {(accion === "OTRO_TALLER" || mostrarPrecios) && (
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+                      {accion === "INTERNO" && mostrarPrecios && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Descuento al taller ($)</label>
+                          <input 
+                            type="number" 
+                            name="descuentoReproceso" 
+                            value={descuento || ""}
+                            onChange={e => setDescuento(Number(e.target.value))}
+                            placeholder="0"
+                            className="w-full rounded-lg border border-slate-200 bg-white text-sm py-2 px-3 font-medium" 
+                          />
+                          <p className="text-[10px] text-slate-400 mt-1">Este valor se descontará del total a pagar por esta asignación.</p>
+                        </div>
+                      )}
 
-                    {accion === "OTRO_TALLER" && (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Seleccionar Taller</label>
-                        <select 
-                          name="nuevoTallerId"
-                          value={nuevoTallerId}
-                          onChange={e => setNuevoTallerId(e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white text-sm py-2 px-3 font-medium"
-                        >
-                          <option value="">Selecciona...</option>
-                          {talleres.map(t => (
-                            <option key={t.id} value={t.id} disabled={t.id === asignacion.tallerId}>{t.nombre}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                      {accion === "OTRO_TALLER" && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Seleccionar Taller</label>
+                          <select 
+                            name="nuevoTallerId"
+                            value={nuevoTallerId}
+                            onChange={e => setNuevoTallerId(e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 bg-white text-sm py-2 px-3 font-medium"
+                          >
+                            <option value="">Selecciona...</option>
+                            {talleres.map(t => (
+                              <option key={t.id} value={t.id} disabled={t.id === asignacion.tallerId}>{t.nombre}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
-                    {(accion === "MISMO_TALLER" || accion === "OTRO_TALLER") && (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Precio a pagar por el arreglo ($/ud)</label>
-                        <input 
-                          type="number" 
-                          name="nuevoPrecioUnitario" 
-                          value={nuevoPrecio || ""}
-                          onChange={e => setNuevoPrecio(Number(e.target.value))}
-                          placeholder="0 si es gratis"
-                          className="w-full rounded-lg border border-slate-200 bg-white text-sm py-2 px-3 font-medium" 
-                        />
-                      </div>
-                    )}
-                  </div>
+                      {(accion === "MISMO_TALLER" || accion === "OTRO_TALLER") && mostrarPrecios && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Precio a pagar por el arreglo ($/ud)</label>
+                          <input 
+                            type="number" 
+                            name="nuevoPrecioUnitario" 
+                            value={nuevoPrecio || ""}
+                            onChange={e => setNuevoPrecio(Number(e.target.value))}
+                            placeholder="0 si es gratis"
+                            className="w-full rounded-lg border border-slate-200 bg-white text-sm py-2 px-3 font-medium" 
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

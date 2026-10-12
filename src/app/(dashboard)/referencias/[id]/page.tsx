@@ -17,9 +17,11 @@ import ImageLightbox from "@/components/ImageLightbox";
 import ReferenciaEditModal from "@/components/ReferenciaEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { nombreOrden, estadoOrden, downloadUrl, parseTelas, parseInsumos } from "@/lib/ordenes";
+import { canDelete } from "@/lib/permissions";
 
 export default async function ReferenciaDetalle({ params }: { params: Promise<{ id: string }> }) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const permiteEliminar = canDelete(user.rol);
   const { id } = await params;
 
   const referencia = await prisma.referencia.findUnique({
@@ -67,7 +69,7 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <ReferenciaEditModal referencia={referencia} variant="button" />
-          {ordenes.length === 0 && (
+          {permiteEliminar && ordenes.length === 0 && (
             <DeleteConfirmModal
               action={async () => {
                 "use server";

@@ -100,7 +100,11 @@ export async function updateReferencia(id: string, formData: FormData) {
 }
 
 export async function deleteReferencia(id: string) {
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const { canDelete } = await import("@/lib/permissions");
+  if (!canDelete(user.rol)) {
+    return { error: "Solo un Administrador puede eliminar referencias." };
+  }
 
   const ref = await prisma.referencia.findUnique({
     where: { id, empresaId: empresa.id },

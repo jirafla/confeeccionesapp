@@ -5,12 +5,14 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Scissors, Factory, PackageCheck, Shirt, CheckCircle2 } from "lucide-react";
 import CalculadoraCostos from "../CalculadoraCostos";
 import { nombreOrden, parseTelas, parseInsumos } from "@/lib/ordenes";
+import { canViewCosts } from "@/lib/permissions";
 
 const fmtFecha = (d: Date | null) => d ? d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : 'Pendiente';
 
 export default async function ResumenOrden({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { empresa } = await requireAuth();
+  const { user, empresa } = await requireAuth();
+  const mostrarPrecios = canViewCosts(user.rol);
 
   const orden = await prisma.ordenProduccion.findFirst({
     where: { id, empresaId: empresa.id },
@@ -143,15 +145,17 @@ export default async function ResumenOrden({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Calculadora de Costos */}
-      <CalculadoraCostos
-        ordenId={orden.id}
-        telas={telas}
-        insumos={insumos}
-        costoCorte={orden.precioCorte || 0}
-        costoConfeccion={orden.asignaciones.reduce((sum, a) => sum + (a.cantidadAsignada * a.precioUnitario) - (a.descuentoReproceso || 0), 0)}
-        cantidadBuenas={buenas}
-        costosGuardados={orden.costosMateriales}
-      />
+      {mostrarPrecios && (
+        <CalculadoraCostos
+          ordenId={orden.id}
+          telas={telas}
+          insumos={insumos}
+          costoCorte={orden.precioCorte || 0}
+          costoConfeccion={orden.asignaciones.reduce((sum, a) => sum + (a.cantidadAsignada * a.precioUnitario) - (a.descuentoReproceso || 0), 0)}
+          cantidadBuenas={buenas}
+          costosGuardados={orden.costosMateriales}
+        />
+      )}
     </div>
   );
 }

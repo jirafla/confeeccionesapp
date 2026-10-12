@@ -50,8 +50,13 @@ export async function updateSession(request: NextRequest) {
       console.warn('Error verificando usuario en middleware:', e)
     }
 
-    // Proteger todas las rutas excepto /login y /auth
-    if (!user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth')) {
+    // Proteger todas las rutas excepto /login, /auth e /invitacion
+    const isPublicRoute =
+      request.nextUrl.pathname.startsWith('/login') ||
+      request.nextUrl.pathname.startsWith('/auth') ||
+      request.nextUrl.pathname.startsWith('/invitacion')
+
+    if (!user && !isPublicRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)

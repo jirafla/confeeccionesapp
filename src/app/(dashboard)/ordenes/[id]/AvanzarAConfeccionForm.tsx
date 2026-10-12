@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { avanzarAConfeccion } from "@/app/actions/ordenesActions";
 
-export default function AvanzarAConfeccionForm({ ordenId, cantidadTotal }: { ordenId: string, cantidadTotal: number }) {
+export default function AvanzarAConfeccionForm({
+  ordenId,
+  cantidadTotal,
+  mostrarPrecios = true,
+}: {
+  ordenId: string;
+  cantidadTotal: number;
+  mostrarPrecios?: boolean;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [precioCorte, setPrecioCorte] = useState<string>("");
@@ -41,30 +49,32 @@ export default function AvanzarAConfeccionForm({ ordenId, cantidadTotal }: { ord
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">Precio de Corte por Prenda (Opcional)</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-              <input
-                type="number"
-                name="precioCorte"
-                step="0.01"
-                min="0"
-                value={precioCorte}
-                onChange={(e) => setPrecioCorte(e.target.value)}
-                placeholder="Ej. 1500"
-                className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-              />
+        <div className={`grid grid-cols-1 ${mostrarPrecios ? "sm:grid-cols-2" : ""} gap-5`}>
+          {mostrarPrecios && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700">Precio de Corte por Prenda (Opcional)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                <input
+                  type="number"
+                  name="precioCorte"
+                  step="0.01"
+                  min="0"
+                  value={precioCorte}
+                  onChange={(e) => setPrecioCorte(e.target.value)}
+                  placeholder="Ej. 1500"
+                  className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                />
+              </div>
+              <p className="text-xs text-slate-500">
+                {precio > 0 ? (
+                  <span className="text-indigo-600 font-semibold">Total del corte: ${(totalCorte).toLocaleString("es-CO")}</span>
+                ) : (
+                  "Deja en blanco si no aplica."
+                )}
+              </p>
             </div>
-            <p className="text-xs text-slate-500">
-              {precio > 0 ? (
-                <span className="text-indigo-600 font-semibold">Total del corte: ${(totalCorte).toLocaleString("es-CO")}</span>
-              ) : (
-                "Deja en blanco si no aplica."
-              )}
-            </p>
-          </div>
+          )}
 
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700">Observaciones (Opcional)</label>
