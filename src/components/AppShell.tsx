@@ -62,7 +62,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             className="font-bold text-xl tracking-tight text-slate-900 flex items-center gap-3 min-w-0" 
             title="Confección"
           >
-            <div className="w-8 h-8 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold shadow-md shadow-indigo-600/20 shrink-0">
+            <div className="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold shadow-md shadow-blue-600/20 shrink-0">
               C
             </div>
             {!isCollapsed && <span className="truncate">Confección</span>}
@@ -90,11 +90,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   isCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl"
                 } transition-all duration-200 ${
                   isActive 
-                    ? "bg-indigo-50 text-indigo-600 font-semibold shadow-sm" 
+                    ? "bg-blue-50 text-blue-600 font-semibold shadow-sm" 
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"
                 }`}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
+                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
                 {!isCollapsed && <span className="truncate text-sm">{link.label}</span>}
               </Link>
             );
@@ -126,13 +126,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="sm:hidden bg-white/80 backdrop-blur-xl border-b border-slate-100 h-16 flex items-center px-6 flex-shrink-0 sticky top-0 z-20">
+        <header className="sm:hidden bg-white/80 backdrop-blur-xl border-b border-slate-100 h-16 flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-20">
            <Link href="/" className="font-bold text-lg tracking-tight text-slate-900 flex items-center gap-2">
-             <div className="w-7 h-7 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold shadow-md text-sm">
+             <div className="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold shadow-md text-sm">
                C
              </div>
              Confección
            </Link>
+           <div className="flex items-center gap-1">
+             <Link
+               href="/configuracion"
+               aria-label="Configuración"
+               className={`p-2 rounded-xl transition-colors ${
+                 pathname.startsWith("/configuracion") ? "text-blue-600 bg-blue-50" : "text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+               }`}
+             >
+               <Settings className="w-5 h-5" />
+             </Link>
+             <form action={logout}>
+               <button type="submit" aria-label="Cerrar sesión" className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                 <LogOut className="w-5 h-5" />
+               </button>
+             </form>
+           </div>
         </header>
 
         {/* Scrollable Main Content */}
@@ -144,9 +160,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <nav className="sm:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50 pb-2">
+      <nav className="sm:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex justify-around items-center h-16 px-2">
-          {links.map((link) => {
+          {links.filter(l => l.href !== "/configuracion").map((link) => {
             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
             const Icon = link.icon;
             return (
@@ -154,10 +170,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={link.href}
                 href={link.href}
                 className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${
-                  isActive ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
+                  isActive ? "text-blue-600" : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                <div className={`p-1.5 rounded-xl transition-all ${isActive ? "bg-indigo-50" : ""}`}>
+                <div className={`p-1.5 rounded-xl transition-all ${isActive ? "bg-blue-50" : ""}`}>
                   <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5px]" : "stroke-2"}`} />
                 </div>
                 <span className={`text-[10px] ${isActive ? "font-bold" : "font-medium"}`}>{link.label}</span>

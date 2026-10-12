@@ -30,10 +30,10 @@ export default async function NuevoTaller() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center space-x-4">
-        <Link href="/talleres" className="text-slate-400 hover:text-slate-900 transition-colors">
+        <Link href="/talleres" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Registrar Taller</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Registrar Taller</h1>
       </div>
       
       <form action={createTaller} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">

@@ -4,6 +4,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { updateEmpresaAction } from "./actions";
 
+const inputCls = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function UpdateEmpresaForm({ empresa }: { empresa: any }) {
   const [isPending, setIsPending] = useState(false);
 
@@ -19,30 +22,22 @@ export default function UpdateEmpresaForm({ empresa }: { empresa: any }) {
       }
     }} className="space-y-4">
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
-        <input 
-          type="text" 
-          name="nombre" 
-          defaultValue={empresa.nombre}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none" 
-        />
+        <label className="block text-sm font-semibold text-slate-700 mb-1.5">Nombre</label>
+        <input type="text" name="nombre" defaultValue={empresa.nombre} className={inputCls} />
       </div>
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1">NIT / Documento</label>
-        <input 
-          type="text" 
-          name="nit" 
-          defaultValue={empresa.nit || ""}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none" 
-        />
+        <label className="block text-sm font-semibold text-slate-700 mb-1.5">NIT / Documento</label>
+        <input type="text" name="nit" defaultValue={empresa.nit || ""} className={inputCls} />
       </div>
-      <button 
-        type="submit" 
-        disabled={isPending}
-        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium text-sm disabled:opacity-50"
-      >
-        {isPending ? 'Guardando...' : 'Guardar Cambios'}
-      </button>
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold text-sm shadow-sm disabled:opacity-50"
+        >
+          {isPending ? 'Guardando...' : 'Guardar cambios'}
+        </button>
+      </div>
     </form>
   )
 }

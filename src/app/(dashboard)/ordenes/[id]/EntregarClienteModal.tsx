@@ -26,7 +26,7 @@ export default function EntregarClienteModal({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const bloqueado = lotesPendientes > 0 || buenas === 0;
+  const bloqueado = buenas === 0;
 
   return (
     <>
@@ -76,15 +76,17 @@ export default function EntregarClienteModal({
               </div>
 
               {lotesPendientes > 0 && (
-                <div className="flex gap-2 p-3 rounded-xl bg-red-50 text-red-700 text-sm">
+                <div className="flex gap-2 p-3 rounded-xl bg-blue-50 text-blue-700 text-sm">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>Hay {lotesPendientes} lote(s) aún en talleres. Recíbelos antes de entregar.</span>
+                  <span>
+                    Aún hay {lotesPendientes} lote(s) en talleres. Al confirmar, la orden se marcará como <strong>Entregada (Parcial)</strong> y podrás ver el análisis de costos de las prendas recibidas. Podrás seguir conciliando los lotes pendientes luego.
+                  </span>
                 </div>
               )}
               {lotesPendientes === 0 && sinAsignar > 0 && (
                 <div className="flex gap-2 p-3 rounded-xl bg-amber-50 text-amber-800 text-sm">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>Quedan {sinAsignar} prendas sin asignar. Se entregará la orden de forma parcial.</span>
+                  <span>Quedan {sinAsignar} prendas sin asignar. Se considerará una entrega final parcial.</span>
                 </div>
               )}
             </div>

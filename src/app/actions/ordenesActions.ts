@@ -98,3 +98,43 @@ export async function deleteOrden(id: string) {
   await prisma.ordenProduccion.delete({ where: { id } });
   redirect("/ordenes");
 }
+
+export async function avanzarAConfeccion(formData: FormData) {
+  const { empresa } = await requireAuth();
+
+  const id = formData.get("id") as string;
+  const precioCorteStr = formData.get("precioCorte") as string;
+  const observacionesCorte = formData.get("observacionesCorte") as string;
+
+  const orden = await prisma.ordenProduccion.findUnique({
+    where: { id, empresaId: empresa.id },
+  });
+
+  if (!orden) return { error: "Orden no encontrada." };
+
+  await prisma.ordenProduccion.update({
+    where: { id },
+    data: { 
+      estado: "CONFECCION",
+      precioCorte: precioCorteStr ? parseFloat(precioCorteStr) : null,
+      observacionesCorte: observacionesCorte || null
+    }
+  });
+
+  revalidatePath(`/ordenes/${id}`);
+  revalidatePath("/ordenes");
+}
+
+export async function guardarCostosMateriales(ordenId: string, costosMateriales: string) {
+  try {
+    const { empresa } = await requireAuth();
+    await prisma.ordenProduccion.update({
+      where: { id: ordenId, empresaId: empresa.id },
+      data: { costosMateriales }
+    });
+    // no need to revalidate path aggressively if we keep client state, but good to have
+    return { success: true };
+  } catch (error: any) {
+    return { error: "No se pudo guardar los costos." };
+  }
+}

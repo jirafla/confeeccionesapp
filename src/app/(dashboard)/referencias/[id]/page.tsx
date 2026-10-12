@@ -16,7 +16,7 @@ import {
 import ImageLightbox from "@/components/ImageLightbox";
 import ReferenciaEditModal from "@/components/ReferenciaEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
-import { nombreOrden, estadoOrden, downloadUrl, parseTelas } from "@/lib/ordenes";
+import { nombreOrden, estadoOrden, downloadUrl, parseTelas, parseInsumos } from "@/lib/ordenes";
 
 export default async function ReferenciaDetalle({ params }: { params: Promise<{ id: string }> }) {
   const { empresa } = await requireAuth();
@@ -39,14 +39,16 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
   const activas = ordenes.filter(o => o.estado !== 'ENTREGADO').length;
   const entregadas = ordenes.length - activas;
   const telas = parseTelas(referencia.telasDetalles);
+  const insumos = parseInsumos(referencia.insumosDetalles);
 
   return (
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
       {/* HEADER */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Link href="/referencias" className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0">
+          <Link href="/referencias" className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1">
             <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-medium">Volver</span>
           </Link>
           <div className="min-w-0">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Referencia</p>
@@ -132,6 +134,36 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
             )}
           </div>
 
+          {/* Tarjeta de Insumos */}
+          {insumos.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                  Insumos
+                </h3>
+                <span className="text-xs text-slate-400 font-medium">{insumos.length} {insumos.length === 1 ? 'insumo' : 'insumos'}</span>
+              </div>
+              <div className="space-y-2">
+                {insumos.map((insumo, idx) => (
+                  <div 
+                    key={idx}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-sm"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <span className="text-[11px] font-bold uppercase text-slate-400 block">{insumo.tipo === 'UNIDAD' ? 'Por unidad' : 'Por medida'}</span>
+                      <p className="font-semibold text-slate-800 truncate">{insumo.nombre}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="font-black text-blue-600 text-base">{insumo.cantidad}</span>
+                      <span className="text-xs text-slate-400 font-medium ml-1">{insumo.tipo === 'UNIDAD' ? 'uds' : 'm/cm'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Archivos */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-2">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1 mb-1">Archivos</h3>
@@ -177,7 +209,7 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
                   const buenas = o.asignaciones.reduce((s, a) => s + (a.cantidadBuena || 0), 0);
                   return (
                     <li key={o.id}>
-                      <Link href={`/ordenes/${o.id}`} className="flex items-center gap-3 sm:gap-4 p-4 sm:px-5 hover:bg-slate-50 transition-colors group">
+                      <Link href={`/ordenes/${o.id}${o.estado === "ENTREGADO" ? "/resumen" : ""}`} className="flex items-center gap-3 sm:gap-4 p-4 sm:px-5 hover:bg-slate-50 transition-colors group">
                         <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                           <span className="text-sm font-black text-slate-600">#{o.consecutivo}</span>
                         </div>

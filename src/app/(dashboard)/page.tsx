@@ -12,12 +12,20 @@ import {
   AlertCircle
 } from "lucide-react";
 import DashboardCharts from "@/components/DashboardCharts";
+import BuscadorHistorial from "@/components/BuscadorHistorial";
+import PaginacionHistorial from "@/components/PaginacionHistorial";
 import { requireAuth } from "@/lib/auth";
 import { nombreOrden, estadoOrden } from "@/lib/ordenes";
+import { Prisma } from "@prisma/client";
 
 const fmtFecha = (d: Date) => d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 
-export default async function Home() {
+export default async function Home(props: { searchParams: Promise<{ q?: string; p?: string }> }) {
+  const searchParams = await props.searchParams;
+  const page = parseInt(searchParams.p || "1") || 1;
+  const query = searchParams.q || "";
+  const TAKE = 15;
+
   const { empresa } = await requireAuth();
 
   // 1. Talleres con sus asignaciones
@@ -70,8 +78,35 @@ export default async function Home() {
 
   const ordenesActivas = ordenes.filter(o => o.estado !== "ENTREGADO").length;
 
-  // Órdenes entregadas al cliente para el historial
-  const ordenesEntregadas = ordenes.filter(o => o.estado === "ENTREGADO");
+  // Órdenes entregadas al cliente para el historial (Paginadas y Filtradas)
+  const historialWhere: Prisma.OrdenProduccionWhereInput = {
+    empresaId: empresa.id,
+    estado: "ENTREGADO",
+    ...(query ? {
+      OR: [
+        { referencia: { nombrePrenda: { contains: query, mode: 'insensitive' } } },
+        { referencia: { codigo: { contains: query, mode: 'insensitive' } } },
+        { cliente: { nombre: { contains: query, mode: 'insensitive' } } }
+      ]
+    } : {})
+  };
+
+  const totalHistorial = await prisma.ordenProduccion.count({ where: historialWhere });
+  const totalPages = Math.ceil(totalHistorial / TAKE);
+  
+  const ordenesEntregadas = await prisma.ordenProduccion.findMany({
+    where: historialWhere,
+    include: {
+      cliente: true,
+      referencia: true,
+      asignaciones: {
+        include: { taller: true }
+      }
+    },
+    orderBy: { fechaEntregado: 'desc' },
+    take: TAKE,
+    skip: (page - 1) * TAKE
+  });
 
   // Data for charts
   const ordenesPorEstado = [
@@ -224,7 +259,7 @@ export default async function Home() {
 
       {/* SECCIÓN 4: HISTORIAL DE ENTREGADOS EN TABLA */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/50">
+        <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
           <div>
             <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <PackageCheck className="w-5 h-5 text-emerald-600" />
@@ -234,9 +269,12 @@ export default async function Home() {
               Registro histórico de prendas y lotes que ya fueron finalizados y entregados al cliente.
             </p>
           </div>
-          <span className="self-start sm:self-auto px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 shrink-0">
-            {ordenesEntregadas.length} {ordenesEntregadas.length === 1 ? "orden entregada" : "órdenes entregadas"}
-          </span>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <BuscadorHistorial />
+            <span className="self-start sm:self-auto px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 shrink-0">
+              {totalHistorial} {totalHistorial === 1 ? "orden" : "órdenes"}
+            </span>
+          </div>
         </div>
 
         {ordenesEntregadas.length === 0 ? (
@@ -244,13 +282,39 @@ export default async function Home() {
             <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <p className="font-bold text-slate-800 text-sm">Aún no hay órdenes entregadas</p>
+            <p className="font-bold text-slate-800 text-sm">No se encontraron órdenes</p>
             <p className="text-xs text-slate-500 max-w-sm mt-1">
-              Cuando completes la confección de una orden y presiones &quot;Entregar al cliente&quot;, quedará registrada en esta tabla con su fecha y prendas.
+              No hay órdenes entregadas que coincidan con la búsqueda.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Móvil: tarjetas */}
+          <ul className="sm:hidden divide-y divide-slate-100">
+            {ordenesEntregadas.map((orden) => {
+              const buenas = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
+              const fecha = orden.fechaEntregado || orden.updatedAt;
+              return (
+                <li key={orden.id}>
+                  <Link href={`/ordenes/${orden.id}/resumen`} className="flex items-center gap-3 p-4 active:bg-slate-50">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                      <PackageCheck className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-slate-900">{nombreOrden(orden)}</p>
+                      <p className="text-xs text-slate-500 truncate">{orden.cliente.nombre} • {fmtFecha(fecha)}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-bold text-emerald-700">{buenas}</p>
+                      <p className="text-[11px] text-slate-400">/ {orden.cantidadTotal} uds</p>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-700">
               <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 tracking-wider border-b border-slate-100">
                 <tr>
@@ -272,7 +336,7 @@ export default async function Home() {
                   return (
                     <tr key={orden.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3.5 px-4 sm:px-6 font-black text-slate-900 whitespace-nowrap">
-                        <Link href={`/ordenes/${orden.id}`} className="hover:text-blue-600 transition-colors">
+                        <Link href={`/ordenes/${orden.id}/resumen`} className="hover:text-blue-600 transition-colors">
                           {nombreOrden(orden)}
                         </Link>
                       </td>
@@ -298,7 +362,7 @@ export default async function Home() {
                               </span>
                             ))
                           ) : (
-                            <span className="text-xs text-slate-400">—</span>
+                            <span className="text-xs text-slate-400">-</span>
                           )}
                         </div>
                       </td>
@@ -310,10 +374,10 @@ export default async function Home() {
                       </td>
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <Link 
-                          href={`/ordenes/${orden.id}`} 
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
+                          href={`/ordenes/${orden.id}/resumen`} 
+                          className="inline-flex items-center justify-center p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
-                          Ver orden <ArrowRight className="w-3.5 h-3.5" />
+                          <ArrowRight className="w-4 h-4" />
                         </Link>
                       </td>
                     </tr>
@@ -322,6 +386,8 @@ export default async function Home() {
               </tbody>
             </table>
           </div>
+          <PaginacionHistorial currentPage={page} totalPages={totalPages} totalItems={totalHistorial} />
+          </>
         )}
       </div>
     </div>

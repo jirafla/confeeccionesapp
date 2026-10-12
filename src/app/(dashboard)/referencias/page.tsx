@@ -36,7 +36,7 @@ export default async function Referencias({
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Referencias</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Referencias</h1>
           <p className="text-sm text-slate-500">{referencias.length} {referencias.length === 1 ? "referencia" : "referencias"}</p>
         </div>
         <Link

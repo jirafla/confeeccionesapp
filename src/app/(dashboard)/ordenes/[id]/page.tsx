@@ -6,10 +6,12 @@ import ConciliarLoteModal from "./ConciliarLoteModal";
 import OrdenTracking from "./OrdenTracking";
 import ImageLightbox from "@/components/ImageLightbox";
 import AsignarTallerModal from "./AsignarTallerModal";
-import BotonAvanzarEstado from "./BotonAvanzarEstado";
+import AvanzarAConfeccionForm from "./AvanzarAConfeccionForm";
 import EntregarClienteModal from "./EntregarClienteModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
-import { nombreOrden, estadoOrden, parseVariantes } from "@/lib/ordenes";
+import MobileAccordion from "@/components/MobileAccordion";
+import CalculadoraCostos from "./CalculadoraCostos";
+import { nombreOrden, estadoOrden, parseVariantes, parseTelas, parseInsumos } from "@/lib/ordenes";
 
 const fmtFecha = (d: Date) => d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 const fmtDinero = (n: number) => `$${n.toLocaleString("es-CO")}`;
@@ -40,8 +42,10 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
   const nombre = nombreOrden(orden);
   const estado = estadoOrden(orden.estado);
   const variantes = parseVariantes(orden.coloresDetalles);
+  const telas = parseTelas(orden.referencia.telasDetalles);
+  const insumos = parseInsumos(orden.referencia.insumosDetalles);
 
-  const asignadas = orden.asignaciones.reduce((sum, a) => sum + a.cantidadAsignada, 0);
+  const asignadas = orden.asignaciones.filter(a => !a.esReproceso).reduce((sum, a) => sum + a.cantidadAsignada, 0);
   const buenas = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
   const reprocesos = orden.asignaciones.reduce((sum, a) => sum + (a.reprocesos || 0), 0);
   const lotesPendientes = orden.asignaciones.filter(a => a.estadoLote !== 'ENTREGADO').length;
@@ -49,13 +53,18 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
   const pctAsignado = Math.round((asignadas / orden.cantidadTotal) * 100);
   const pctRecibido = Math.round((buenas / orden.cantidadTotal) * 100);
 
+  const costoCorte = (orden.precioCorte ?? 0) * orden.cantidadTotal;
+  const costoConfeccion = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadAsignada * a.precioUnitario), 0);
+  const costoTotal = costoCorte + costoConfeccion;
+
   return (
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
       {/* HEADER */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Link href="/ordenes" className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0">
+          <Link href="/ordenes" className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1">
             <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-medium">Volver</span>
           </Link>
           <div className="min-w-0">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Orden de producción</p>
@@ -89,7 +98,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
         {/* COLUMNA IZQUIERDA: INFO */}
         <div className="lg:col-span-1 space-y-5 sm:space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <MobileAccordion title="Información de la Referencia">
             <div className="aspect-[4/3] bg-slate-50 relative flex items-center justify-center border-b border-slate-100 overflow-hidden">
               {orden.referencia.disenoArchivoUrl ? (
                 <ImageLightbox src={orden.referencia.disenoArchivoUrl} alt="Diseño" className="w-full h-full" />
@@ -134,8 +143,60 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                   </ul>
                 </div>
               )}
+
+              {(orden.precioCorte !== null || orden.observacionesCorte) && (
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Detalles de Corte</p>
+                  {orden.precioCorte !== null && (
+                    <p className="text-sm flex justify-between mb-1.5"><span className="text-slate-500">Precio de corte:</span> <span className="font-bold text-slate-900">{fmtDinero(orden.precioCorte)}</span></p>
+                  )}
+                  {orden.observacionesCorte && (
+                    <div>
+                      <span className="text-slate-500 text-sm">Observaciones:</span>
+                      <p className="text-sm font-medium text-slate-700 mt-0.5 whitespace-pre-wrap leading-relaxed">{orden.observacionesCorte}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {telas.length > 0 && (
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Telas / Materiales</p>
+                  <ul className="space-y-2">
+                    {telas.map((tela, i) => (
+                      <li key={i} className="text-sm bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                        <div className="flex justify-between items-center font-semibold text-slate-900">
+                          <span>{tela.nombre} {tela.tipo ? <span className="text-slate-500 font-normal">({tela.tipo})</span> : ""}</span>
+                          <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs">{tela.promedio} m</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {insumos.length > 0 && (
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Insumos (Adicionales)</p>
+                  <ul className="space-y-2">
+                    {insumos.map((insumo, i) => (
+                      <li key={i} className="text-sm bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                        <div className="flex justify-between items-center font-semibold text-slate-900">
+                          <div>
+                            <span className="block">{insumo.nombre}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase block -mt-0.5">{insumo.tipo === 'UNIDAD' ? 'Por unidad' : 'Por medida'}</span>
+                          </div>
+                          <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-xs shrink-0">
+                            {insumo.cantidad} {insumo.tipo === 'UNIDAD' ? 'uds' : 'm/cm'}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          </div>
+          </MobileAccordion>
 
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
             <h3 className="font-bold text-slate-900 mb-4">Progreso</h3>
@@ -193,24 +254,37 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                 </div>
               </div>
 
-              <div className="flex justify-end">
-                <BotonAvanzarEstado ordenId={orden.id} siguienteEstado="CONFECCION" label="Enviar a Confección" />
-              </div>
+              <AvanzarAConfeccionForm ordenId={orden.id} cantidadTotal={orden.cantidadTotal} />
             </div>
           )}
 
           {orden.estado === 'ENTREGADO' && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-start gap-4">
-              <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center shrink-0">
-                <PackageCheck className="w-6 h-6 text-emerald-600" />
+            <div className="space-y-6">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-start gap-4">
+                <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center shrink-0">
+                  <PackageCheck className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-emerald-900">Entregada al cliente</h3>
+                  <p className="text-sm text-emerald-700">
+                    {buenas} prendas entregadas a {orden.cliente.nombre}
+                    {orden.fechaEntregado && <> el {fmtFecha(orden.fechaEntregado)}</>}.
+                  </p>
+                  {lotesPendientes > 0 && (
+                    <p className="text-xs font-bold text-amber-700 mt-1">Entrega Parcial: Aún hay {lotesPendientes} lote(s) en talleres.</p>
+                  )}
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-emerald-900">Entregada al cliente</h3>
-                <p className="text-sm text-emerald-700">
-                  {buenas} prendas entregadas a {orden.cliente.nombre}
-                  {orden.fechaEntregado && <> el {fmtFecha(orden.fechaEntregado)}</>}.
-                </p>
-              </div>
+
+              <CalculadoraCostos 
+                ordenId={orden.id}
+                telas={telas}
+                insumos={insumos}
+                costoCorte={costoCorte}
+                costoConfeccion={costoConfeccion}
+                cantidadBuenas={buenas}
+                costosGuardados={orden.costosMateriales}
+              />
             </div>
           )}
 
@@ -266,9 +340,16 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                       <div key={asig.id} className="p-4 sm:p-5">
                         <div className="flex justify-between items-start gap-3 mb-3">
                           <div className="min-w-0">
-                            <Link href={`/talleres/${asig.tallerId}`} className="font-bold text-slate-900 text-base sm:text-lg hover:text-blue-600 truncate block">
-                              {asig.taller.nombre}
-                            </Link>
+                            <div className="flex items-center gap-2">
+                              <Link href={`/talleres/${asig.tallerId}`} className="font-bold text-slate-900 text-base sm:text-lg hover:text-blue-600 truncate block">
+                                {asig.taller.nombre}
+                              </Link>
+                              {asig.esReproceso && (
+                                <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0">
+                                  Reproceso
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs sm:text-sm text-slate-500 font-medium flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
                               <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Envío {fmtFecha(asig.fechaEnvio)}</span>
                               <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-amber-500" /> Pactada {fmtFecha(asig.fechaEntregaEsperada)}</span>
@@ -290,7 +371,9 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                           </div>
                           <div>
                             <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Total pago</p>
-                            <p className="font-bold text-indigo-700">{fmtDinero(asig.cantidadAsignada * asig.precioUnitario)}</p>
+                            <p className="font-bold text-indigo-700">
+                              {fmtDinero((asig.cantidadAsignada * asig.precioUnitario) - (asig.descuentoReproceso || 0))}
+                            </p>
                           </div>
                           <div>
                             <p className="text-slate-500 text-[11px] font-bold uppercase mb-0.5">Recibidas</p>
@@ -304,6 +387,19 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                             )}
                           </div>
                         </div>
+                        
+                        {(asig.descuentoReproceso || 0) > 0 && (
+                          <div className="mt-3 text-[11px] font-bold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg inline-flex items-center ring-1 ring-rose-200">
+                            Se descontaron {fmtDinero(asig.descuentoReproceso!)} (Ajuste Interno)
+                          </div>
+                        )}
+
+                        {asig.notasReproceso && (
+                          <div className="text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded-lg mt-3 font-medium ring-1 ring-amber-200">
+                            <span className="font-bold uppercase tracking-wider text-[10px] block mb-0.5">Nota de Reproceso</span>
+                            {asig.notasReproceso}
+                          </div>
+                        )}
 
                         {asig.insumosEntregados && (
                           <p className="text-xs text-slate-500 mt-2"><span className="font-semibold">Insumos:</span> {asig.insumosEntregados}</p>
@@ -311,7 +407,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
 
                         {!recibido && (
                           <div className="mt-3 flex justify-end">
-                            <ConciliarLoteModal asignacion={asig} />
+                            <ConciliarLoteModal asignacion={asig} talleres={talleres} />
                           </div>
                         )}
                       </div>

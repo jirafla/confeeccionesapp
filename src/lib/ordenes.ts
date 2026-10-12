@@ -57,3 +57,29 @@ export function parseTelas(telasDetalles: string | null | undefined): TelaItem[]
   }
   return [];
 }
+
+export type InsumoItem = {
+  nombre: string;
+  tipo: string;
+  cantidad: number;
+};
+
+/** Parsea el string JSON de insumos de una referencia */
+export function parseInsumos(insumosDetalles: string | null | undefined): InsumoItem[] {
+  if (!insumosDetalles) return [];
+  try {
+    const parsed = JSON.parse(insumosDetalles);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .filter((i) => i && typeof i === "object")
+        .map((i) => ({
+          nombre: String(i.nombre || "Insumo"),
+          tipo: String(i.tipo || "Unidad"),
+          cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0,
+        }));
+    }
+  } catch {
+    // Si no es JSON válido
+  }
+  return [];
+}

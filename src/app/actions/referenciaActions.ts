@@ -26,6 +26,7 @@ export async function createReferencia(formData: FormData) {
   const codigo = (formData.get("codigo") as string)?.trim();
   const nombrePrenda = (formData.get("nombrePrenda") as string)?.trim() || null;
   const telasDetalles = (formData.get("telasDetalles") as string)?.trim() || null;
+  const insumosDetalles = (formData.get("insumosDetalles") as string)?.trim() || null;
 
   if (!codigo) return { error: "El código es requerido." };
 
@@ -43,6 +44,7 @@ export async function createReferencia(formData: FormData) {
       codigo,
       nombrePrenda,
       telasDetalles,
+      insumosDetalles,
       disenoArchivoUrl,
       optitexArchivoUrl,
       empresaId: empresa.id
@@ -58,6 +60,7 @@ export async function updateReferencia(id: string, formData: FormData) {
   const codigo = (formData.get("codigo") as string)?.trim();
   const nombrePrenda = (formData.get("nombrePrenda") as string)?.trim() || null;
   const telasDetalles = (formData.get("telasDetalles") as string)?.trim() || null;
+  const insumosDetalles = (formData.get("insumosDetalles") as string)?.trim() || null;
 
   if (!codigo) return { error: "El código es requerido." };
 
@@ -65,12 +68,14 @@ export async function updateReferencia(id: string, formData: FormData) {
     codigo: string; 
     nombrePrenda: string | null; 
     telasDetalles: string | null;
+    insumosDetalles: string | null;
     disenoArchivoUrl?: string; 
     optitexArchivoUrl?: string;
   } = { 
     codigo,
     nombrePrenda,
-    telasDetalles
+    telasDetalles,
+    insumosDetalles
   };
 
   try {

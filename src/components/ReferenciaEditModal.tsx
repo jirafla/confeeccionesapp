@@ -5,13 +5,15 @@ import { updateReferencia } from "@/app/actions/referenciaActions";
 import { toast } from "sonner";
 import { X, Edit2, ImageIcon, FileText, Upload } from "lucide-react";
 import TelasInputList, { TelaInputItem } from "./TelasInputList";
-import { parseTelas } from "@/lib/ordenes";
+import InsumosInputList, { InsumoInputItem } from "./InsumosInputList";
+import { parseTelas, parseInsumos } from "@/lib/ordenes";
 
 type Ref = { 
   id: string; 
   codigo: string; 
   nombrePrenda?: string | null;
   telasDetalles?: string | null;
+  insumosDetalles?: string | null;
   disenoArchivoUrl: string | null; 
   optitexArchivoUrl: string | null;
 };
@@ -27,6 +29,11 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
     initialTelasParsed.length > 0
       ? initialTelasParsed.map((t) => ({ nombre: t.nombre, tipo: t.tipo, promedio: t.promedio }))
       : [{ nombre: "Tela 1", tipo: "", promedio: "" }]
+  );
+
+  const initialInsumosParsed = parseInsumos(referencia.insumosDetalles);
+  const [insumos, setInsumos] = useState<InsumoInputItem[]>(
+    initialInsumosParsed.map((i) => ({ nombre: i.nombre, tipo: i.tipo, cantidad: i.cantidad }))
   );
 
   const cerrar = () => {
@@ -84,7 +91,16 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
                     promedio: typeof t.promedio === "number" ? t.promedio : parseFloat(t.promedio) || 0
                   }));
 
+                const insumosValidos = insumos
+                  .filter((i) => i.nombre.trim())
+                  .map((i) => ({
+                    nombre: i.nombre.trim(),
+                    tipo: i.tipo,
+                    cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0
+                  }));
+
                 formData.set("telasDetalles", JSON.stringify(telasValidas));
+                formData.set("insumosDetalles", JSON.stringify(insumosValidos));
 
                 const res = await updateReferencia(referencia.id, formData);
                 setIsPending(false);
@@ -127,6 +143,11 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
               {/* Telas */}
               <div className="border-t border-slate-100 pt-2">
                 <TelasInputList telas={telas} onChange={setTelas} />
+              </div>
+
+              {/* Insumos */}
+              <div className="border-t border-slate-100 pt-2">
+                <InsumosInputList insumos={insumos} onChange={setInsumos} />
               </div>
 
               {/* Imagen */}

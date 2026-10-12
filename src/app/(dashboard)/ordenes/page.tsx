@@ -59,7 +59,7 @@ export default async function Ordenes({
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Órdenes</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Órdenes</h1>
           <p className="text-sm text-slate-500">{ordenes.length} {ordenes.length === 1 ? "orden" : "órdenes"}</p>
         </div>
         <Link

@@ -6,18 +6,20 @@ import { ArrowLeft } from "lucide-react";
 import { createReferencia } from "@/app/actions/referenciaActions";
 import { toast } from "sonner";
 import TelasInputList, { TelaInputItem } from "@/components/TelasInputList";
+import InsumosInputList, { InsumoInputItem } from "@/components/InsumosInputList";
 
 export default function NuevaReferencia() {
   const [isPending, setIsPending] = useState(false);
   const [telas, setTelas] = useState<TelaInputItem[]>([
     { nombre: "Tela 1", tipo: "", promedio: "" }
   ]);
+  const [insumos, setInsumos] = useState<InsumoInputItem[]>([]);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center space-x-4">
-        <Link href="/referencias" className="text-slate-400 hover:text-slate-900 transition-colors">
-          <ArrowLeft className="w-6 h-6" />
+        <Link href="/referencias" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors">
+          <ArrowLeft className="w-6 h-6" /> Volver
         </Link>
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Nueva Referencia</h1>
@@ -38,7 +40,16 @@ export default function NuevaReferencia() {
               promedio: typeof t.promedio === "number" ? t.promedio : parseFloat(t.promedio) || 0
             }));
 
+          const insumosValidos = insumos
+            .filter((i) => i.nombre.trim())
+            .map((i) => ({
+              nombre: i.nombre.trim(),
+              tipo: i.tipo,
+              cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0
+            }));
+
           formData.set("telasDetalles", JSON.stringify(telasValidas));
+          formData.set("insumosDetalles", JSON.stringify(insumosValidos));
 
           const res = await createReferencia(formData);
           setIsPending(false);
@@ -78,6 +89,11 @@ export default function NuevaReferencia() {
         {/* COMPONENTE DINÁMICO DE TELAS */}
         <div className="pt-2 border-t border-slate-100">
           <TelasInputList telas={telas} onChange={setTelas} />
+        </div>
+
+        {/* COMPONENTE DINÁMICO DE INSUMOS */}
+        <div className="pt-2 border-t border-slate-100">
+          <InsumosInputList insumos={insumos} onChange={setInsumos} />
         </div>
 
         {/* ARCHIVOS ADJUNTOS */}

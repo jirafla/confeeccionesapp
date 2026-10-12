@@ -69,6 +69,7 @@ model Referencia {
   codigo            String   
   nombrePrenda      String?  // Ej. "Vestido con cuello"
   telasDetalles     String?  // JSON con lista de telas: [{ nombre: "Tela 1", tipo: "Malla", promedio: 0.57 }]
+  insumosDetalles   String?  // JSON con lista de insumos
   disenoArchivoUrl  String? 
   optitexArchivoUrl String? 
   
@@ -86,7 +87,10 @@ model OrdenProduccion {
   cantidadTotal     Int
   coloresDetalles   String?
   estado            String   @default("CORTE") // CORTE, CONFECCION, ENTREGADO
+  precioCorte       Float?
+  observacionesCorte String?
   fechaEntregado    DateTime?
+  costosMateriales  String?
 
   clienteId         String
   cliente           Cliente    @relation(fields: [clienteId], references: [id])
@@ -114,6 +118,10 @@ model Asignacion {
   reprocesos        Int?     @default(0)
   estadoLote        String   @default("ASIGNADO") // ASIGNADO, ENTREGADO
   estadoPago        String   @default("PENDIENTE") // PENDIENTE, PAGADO
+
+  esReproceso       Boolean  @default(false)
+  descuentoReproceso Float?  @default(0)
+  notasReproceso    String?
 
   ordenId           String
   orden             OrdenProduccion @relation(fields: [ordenId], references: [id], onDelete: Cascade)

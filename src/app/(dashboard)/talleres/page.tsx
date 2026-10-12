@@ -3,17 +3,19 @@ import Link from "next/link";
 
 import SearchInput from "@/components/SearchInput";
 import EmptyState from "@/components/EmptyState";
+import TalleresSortSelect from "./TalleresSortSelect";
 
 import { requireAuth } from "@/lib/auth";
 
 export default async function Talleres({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string, sort?: string }>;
 }) {
   const { empresa } = await requireAuth();
   const query = await searchParams;
   const q = query.q || "";
+  const sort = query.sort === "asc" ? "asc" : "desc";
 
   const talleres = await prisma.taller.findMany({
     where: {
@@ -32,7 +34,7 @@ export default async function Talleres({
     },
     orderBy: {
       asignaciones: {
-        _count: 'desc'
+        _count: sort
       }
     }
   });
@@ -40,7 +42,7 @@ export default async function Talleres({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Talleres de Confección</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Talleres de Confección</h1>
         <Link 
           href="/talleres/nuevo" 
           className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center w-full sm:w-auto shrink-0"
@@ -49,8 +51,13 @@ export default async function Talleres({
         </Link>
       </div>
 
-      <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 mb-6">
-        <SearchInput placeholder="Buscar por nombre o teléfono..." />
+      <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <SearchInput placeholder="Buscar por nombre o teléfono..." />
+        </div>
+        <div className="w-full sm:w-60 shrink-0">
+          <TalleresSortSelect />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">

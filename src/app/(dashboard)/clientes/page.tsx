@@ -36,7 +36,7 @@ export default async function Clientes({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Clientes</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Clientes</h1>
         <Link 
           href="/clientes/nuevo" 
           className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center w-full sm:w-auto shrink-0 gap-2"

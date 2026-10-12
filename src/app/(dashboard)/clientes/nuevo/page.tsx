@@ -12,10 +12,10 @@ export default async function NuevoCliente() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center space-x-4">
-        <Link href="/clientes" className="text-slate-400 hover:text-slate-900 transition-colors">
-          <ArrowLeft className="w-6 h-6" />
+        <Link href="/clientes" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors">
+          <ArrowLeft className="w-6 h-6" /> Volver
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Registrar Cliente</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Registrar Cliente</h1>
       </div>
       
       <form action={async (formData) => {
