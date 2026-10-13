@@ -28,9 +28,17 @@ export default function AceptarInvitacionForm({
     <form
       action={async (formData) => {
         setIsPending(true);
-        const res = await aceptarInvitacionAction(formData);
-        if (res?.error) {
-          toast.error(res.error);
+        try {
+          const res = await aceptarInvitacionAction(formData);
+          if (res?.error) {
+            toast.error(res.error);
+            setIsPending(false);
+          } else if (res?.success) {
+            toast.success("¡Cuenta activada con éxito! Redirigiendo...");
+            window.location.href = "/";
+          }
+        } catch (err: any) {
+          toast.error(err?.message || "Error al procesar la invitación.");
           setIsPending(false);
         }
       }}
@@ -61,6 +69,7 @@ export default function AceptarInvitacionForm({
             type="email"
             value={email}
             disabled
+            autoComplete="email"
             className="w-full rounded-xl border border-slate-200 bg-slate-100 pl-10 pr-4 py-2.5 text-sm text-slate-600 font-medium cursor-not-allowed"
           />
         </div>
@@ -76,6 +85,7 @@ export default function AceptarInvitacionForm({
             type="text"
             name="nombre"
             required
+            autoComplete="name"
             defaultValue={nombreInicial}
             placeholder="Ej. Carlos Ramírez"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
@@ -94,6 +104,7 @@ export default function AceptarInvitacionForm({
             name="password"
             required
             minLength={6}
+            autoComplete="new-password"
             placeholder="Mínimo 6 caracteres"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
           />
@@ -111,6 +122,7 @@ export default function AceptarInvitacionForm({
             name="confirmPassword"
             required
             minLength={6}
+            autoComplete="new-password"
             placeholder="Repite tu contraseña"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
           />

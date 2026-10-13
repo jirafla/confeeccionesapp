@@ -27,10 +27,18 @@ export default function LoginForm() {
       <form 
         action={async (formData) => {
           setIsLoading(true);
-          const result = isLogin ? await login(formData) : await signup(formData);
-          
-          if (result?.error) {
-            toast.error(result.error);
+          try {
+            const result = isLogin ? await login(formData) : await signup(formData);
+            
+            if (result?.error) {
+              toast.error(result.error);
+              setIsLoading(false);
+            } else if (result?.success) {
+              toast.success(isLogin ? 'Iniciando sesión...' : 'Cuenta creada. Redirigiendo...');
+              window.location.href = '/';
+            }
+          } catch (err: any) {
+            toast.error(err?.message || 'Error de conexión con el servidor');
             setIsLoading(false);
           }
         }} 
@@ -41,6 +49,7 @@ export default function LoginForm() {
           <input 
             type="email" 
             name="email" 
+            autoComplete="email"
             required 
             className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" 
             placeholder="usuario@empresa.com"
@@ -52,6 +61,7 @@ export default function LoginForm() {
           <input 
             type="password" 
             name="password" 
+            autoComplete={isLogin ? "current-password" : "new-password"}
             required 
             className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" 
             placeholder="••••••••"
@@ -63,35 +73,35 @@ export default function LoginForm() {
             <p className="text-sm font-semibold text-gray-700">Opciones de Empresa</p>
             <div className="flex gap-4 mb-2">
               <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input type="radio" name="empresaAction" value="join" defaultChecked onChange={(e) => {
-                  document.querySelector('.join-group')?.classList.remove('hidden');
-                  document.querySelector('.create-group')?.classList.add('hidden');
-                }} className="text-blue-600 focus:ring-blue-500" />
-                Unirme con invitación
-              </label>
-              <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input type="radio" name="empresaAction" value="create" onChange={(e) => {
+                <input type="radio" name="empresaAction" value="create" defaultChecked onChange={() => {
                   document.querySelector('.create-group')?.classList.remove('hidden');
                   document.querySelector('.join-group')?.classList.add('hidden');
                 }} className="text-blue-600 focus:ring-blue-500" />
                 Crear nueva empresa
               </label>
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+                <input type="radio" name="empresaAction" value="join" onChange={() => {
+                  document.querySelector('.join-group')?.classList.remove('hidden');
+                  document.querySelector('.create-group')?.classList.add('hidden');
+                }} className="text-blue-600 focus:ring-blue-500" />
+                Unirme con ID
+              </label>
             </div>
             
-            <div className="join-group">
-              <input 
-                type="text" 
-                name="empresaId" 
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" 
-                placeholder="ID de Invitación (Ej: cmv...)"
-              />
-            </div>
-            <div className="create-group hidden">
+            <div className="create-group">
               <input 
                 type="text" 
                 name="nuevaEmpresaNombre" 
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" 
                 placeholder="Nombre de tu Empresa (Ej: Confecciones Sunset)"
+              />
+            </div>
+            <div className="join-group hidden">
+              <input 
+                type="text" 
+                name="empresaId" 
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" 
+                placeholder="ID de Empresa"
               />
             </div>
           </div>
