@@ -11,21 +11,7 @@ import {
   Calendar,
   AlertCircle
 } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const DashboardCharts = dynamic(() => import("@/components/DashboardCharts"), {
-  ssr: false,
-  loading: () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[330px] flex items-center justify-center">
-        <div className="w-full h-full bg-slate-50/70 rounded-xl animate-pulse" />
-      </div>
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[330px] flex items-center justify-center">
-        <div className="w-full h-full bg-slate-50/70 rounded-xl animate-pulse" />
-      </div>
-    </div>
-  ),
-});
+import DashboardCharts from "@/components/DashboardCharts";
 import BuscadorHistorial from "@/components/BuscadorHistorial";
 import PaginacionHistorial from "@/components/PaginacionHistorial";
 import { requireAuth } from "@/lib/auth";
