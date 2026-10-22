@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createAsignacion } from "@/app/actions/asignacionActions";
 import { toast } from "sonner";
-import { Factory, X, Plus } from "lucide-react";
+import { Factory, X, Plus, Sparkles } from "lucide-react";
 
 export default function AsignarTallerModal({
   ordenId,
@@ -11,28 +11,36 @@ export default function AsignarTallerModal({
   pendientes,
   isFirst = false,
   mostrarPrecios = true,
+  insumosSugeridos = "",
 }: {
   ordenId: string;
   talleres: any[];
   pendientes: number;
   isFirst?: boolean;
   mostrarPrecios?: boolean;
+  insumosSugeridos?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [insumosTexto, setInsumosTexto] = useState(insumosSugeridos);
+
+  const abrirModal = () => {
+    setInsumosTexto(insumosSugeridos);
+    setIsOpen(true);
+  };
 
   return (
     <>
       {isFirst ? (
         <button 
-          onClick={() => setIsOpen(true)}
+          onClick={abrirModal}
           className="mt-6 bg-blue-600 text-white font-medium px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm inline-flex items-center gap-2"
         >
           <Factory className="w-5 h-5" /> Asignar Primer Taller
         </button>
       ) : (
         <button 
-          onClick={() => setIsOpen(true)}
+          onClick={abrirModal}
           className="bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
         >
           <Plus className="w-4 h-4" /> Asignar Nuevo Lote
@@ -71,7 +79,7 @@ export default function AsignarTallerModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Seleccionar Taller <span className="text-red-500">*</span></label>
-                  <select name="tallerId" required className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2">
+                  <select name="tallerId" required className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 px-3">
                     <option value="">Seleccione...</option>
                     {talleres.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
                   </select>
@@ -84,7 +92,7 @@ export default function AsignarTallerModal({
                     required 
                     max={pendientes}
                     defaultValue={pendientes}
-                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
+                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 px-3" 
                   />
                 </div>
                 {mostrarPrecios ? (
@@ -94,7 +102,7 @@ export default function AsignarTallerModal({
                       type="number" 
                       name="precioUnitario" 
                       required 
-                      className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
+                      className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 px-3" 
                     />
                   </div>
                 ) : (
@@ -107,7 +115,7 @@ export default function AsignarTallerModal({
                     name="fechaEnvio" 
                     required 
                     defaultValue={new Date().toISOString().split('T')[0]}
-                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
+                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 px-3" 
                   />
                 </div>
                 <div>
@@ -116,16 +124,31 @@ export default function AsignarTallerModal({
                     type="date" 
                     name="fechaEntregaEsperada" 
                     required 
-                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2" 
+                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 px-3" 
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Insumos Entregados (Opcional)</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-semibold text-slate-700">
+                      Insumos Entregados (Opcional)
+                    </label>
+                    {insumosSugeridos && insumosTexto !== insumosSugeridos && (
+                      <button
+                        type="button"
+                        onClick={() => setInsumosTexto(insumosSugeridos)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" /> Autocompletar según orden
+                      </button>
+                    )}
+                  </div>
                   <textarea 
                     name="insumosEntregados" 
                     rows={2}
+                    value={insumosTexto}
+                    onChange={(e) => setInsumosTexto(e.target.value)}
                     placeholder="Ej. Hilos, marquillas, botones..."
-                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 resize-none" 
+                    className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 px-3 resize-none" 
                   ></textarea>
                 </div>
               </div>

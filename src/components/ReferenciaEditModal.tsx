@@ -33,7 +33,12 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
 
   const initialInsumosParsed = parseInsumos(referencia.insumosDetalles);
   const [insumos, setInsumos] = useState<InsumoInputItem[]>(
-    initialInsumosParsed.map((i) => ({ nombre: i.nombre, tipo: i.tipo, cantidad: i.cantidad }))
+    initialInsumosParsed.map((i) => ({
+      nombre: i.nombre,
+      tipo: i.tipo,
+      cantidad: i.cantidad,
+      porColor: i.porColor !== false,
+    }))
   );
 
   const cerrar = () => {
@@ -96,7 +101,8 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
                   .map((i) => ({
                     nombre: i.nombre.trim(),
                     tipo: i.tipo,
-                    cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0
+                    cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0,
+                    porColor: i.porColor !== false,
                   }));
 
                 formData.set("telasDetalles", JSON.stringify(telasValidas));

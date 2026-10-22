@@ -12,6 +12,7 @@ export async function createOrden(formData: FormData) {
   const referenciaId = formData.get("referenciaId") as string;
   const cantidadTotal = parseInt(formData.get("cantidadTotal") as string);
   const coloresDetalles = formData.get("coloresDetalles") as string;
+  const insumosColores = (formData.get("insumosColores") as string) || null;
 
   if (!clienteId || !referenciaId || isNaN(cantidadTotal)) {
     return { error: "Campos obligatorios incompletos." };
@@ -31,6 +32,7 @@ export async function createOrden(formData: FormData) {
       consecutivo,
       cantidadTotal,
       coloresDetalles,
+      insumosColores,
       estado: "CORTE",
       empresaId: empresa.id
     }

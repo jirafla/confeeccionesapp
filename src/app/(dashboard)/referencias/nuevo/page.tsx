@@ -45,7 +45,8 @@ export default function NuevaReferencia() {
             .map((i) => ({
               nombre: i.nombre.trim(),
               tipo: i.tipo,
-              cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0
+              cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0,
+              porColor: i.porColor !== false,
             }));
 
           formData.set("telasDetalles", JSON.stringify(telasValidas));

@@ -102,6 +102,7 @@ model OrdenProduccion {
   consecutivo       Int      @default(1) // Nro. de orden dentro de la referencia: 5370-1, 5370-2...
   cantidadTotal     Int
   coloresDetalles   String?
+  insumosColores    String?
   estado            String   @default("CORTE") // CORTE, CONFECCION, ENTREGADO
   precioCorte       Float?
   observacionesCorte String?

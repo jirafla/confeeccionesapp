@@ -11,7 +11,16 @@ import EntregarClienteModal from "./EntregarClienteModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import MobileAccordion from "@/components/MobileAccordion";
 import CalculadoraCostos from "./CalculadoraCostos";
-import { nombreOrden, estadoOrden, parseVariantes, parseTelas, parseInsumos } from "@/lib/ordenes";
+import {
+  nombreOrden,
+  estadoOrden,
+  parseVariantes,
+  parseTelas,
+  parseInsumos,
+  parseInsumosColores,
+  calcularDesgloseInsumos,
+  formatearResumenInsumos,
+} from "@/lib/ordenes";
 import { canViewCosts, canDelete } from "@/lib/permissions";
 
 const fmtFecha = (d: Date) => d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
@@ -47,6 +56,9 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
   const variantes = parseVariantes(orden.coloresDetalles);
   const telas = parseTelas(orden.referencia.telasDetalles);
   const insumos = parseInsumos(orden.referencia.insumosDetalles);
+  const insumosOverrides = parseInsumosColores(orden.insumosColores);
+  const desgloseInsumos = calcularDesgloseInsumos(insumos, variantes, orden.cantidadTotal, insumosOverrides);
+  const resumenInsumosTaller = formatearResumenInsumos(desgloseInsumos);
 
   const asignadas = orden.asignaciones.filter(a => !a.esReproceso).reduce((sum, a) => sum + a.cantidadAsignada, 0);
   const buenas = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
@@ -178,21 +190,36 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                 </div>
               )}
 
-              {insumos.length > 0 && (
+              {desgloseInsumos.length > 0 && (
                 <div className="pt-2 border-t border-slate-100">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Insumos (Adicionales)</p>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Insumos para esta Orden</p>
                   <ul className="space-y-2">
-                    {insumos.map((insumo, i) => (
-                      <li key={i} className="text-sm bg-slate-50 border border-slate-100 p-2.5 rounded-xl">
+                    {desgloseInsumos.map((ins) => (
+                      <li key={ins.insumoIdx} className="text-sm bg-slate-50 border border-slate-100 p-2.5 rounded-xl space-y-1.5">
                         <div className="flex justify-between items-center font-semibold text-slate-900">
                           <div>
-                            <span className="block">{insumo.nombre}</span>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block -mt-0.5">{insumo.tipo === 'UNIDAD' ? 'Por unidad' : 'Por medida'}</span>
+                            <span className="block">{ins.nombre}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase block -mt-0.5">
+                              {ins.consumoUnitario} {ins.unidadLabel} / prenda
+                            </span>
                           </div>
-                          <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-xs shrink-0">
-                            {insumo.cantidad} {insumo.tipo === 'UNIDAD' ? 'uds' : 'm/cm'}
+                          <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-xs font-bold shrink-0">
+                            Total: {ins.totalCantidad} {ins.unidadLabel}
                           </span>
                         </div>
+                        {ins.porColor && ins.agrupadoPorColor.length > 0 && (
+                          <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-200/60">
+                            {ins.agrupadoPorColor.map((ag, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1 text-[11px] font-bold bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md"
+                              >
+                                <span className="text-indigo-600">{ag.cantidad} {ins.unidadLabel}</span>
+                                <span>{ag.color}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -256,6 +283,36 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                   <p className="text-sm font-medium text-blue-100">Total</p>
                 </div>
               </div>
+
+              {desgloseInsumos.length > 0 && (
+                <div className="mb-6 p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 space-y-2.5">
+                  <p className="text-xs font-bold text-indigo-900 uppercase tracking-wider">
+                    Insumos a alistar por color
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {desgloseInsumos.map((ins) => (
+                      <div key={ins.insumoIdx} className="bg-white p-3 rounded-lg border border-indigo-100/80">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="font-bold text-sm text-slate-900">{ins.nombre}</span>
+                          <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">
+                            {ins.totalCantidad} {ins.unidadLabel}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {ins.agrupadoPorColor.map((ag, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1 text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-700 px-2 py-0.5 rounded"
+                            >
+                              <strong className="text-indigo-600">{ag.cantidad} {ins.unidadLabel}</strong> {ag.color}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <AvanzarAConfeccionForm ordenId={orden.id} cantidadTotal={orden.cantidadTotal} mostrarPrecios={mostrarPrecios} />
             </div>
@@ -324,7 +381,13 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                   Lotes en talleres <span className="text-slate-400 font-medium">({orden.asignaciones.length})</span>
                 </h2>
                 {orden.estado === 'CONFECCION' && pendientesPorAsignar > 0 && orden.asignaciones.length > 0 && (
-                  <AsignarTallerModal ordenId={orden.id} talleres={talleres} pendientes={pendientesPorAsignar} mostrarPrecios={mostrarPrecios} />
+                  <AsignarTallerModal
+                    ordenId={orden.id}
+                    talleres={talleres}
+                    pendientes={pendientesPorAsignar}
+                    mostrarPrecios={mostrarPrecios}
+                    insumosSugeridos={resumenInsumosTaller}
+                  />
                 )}
               </div>
 
@@ -335,7 +398,14 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                   </div>
                   <h3 className="font-bold text-slate-900 mb-1">No hay talleres asignados</h3>
                   <p className="text-sm text-slate-500 max-w-sm">Asigna el primer lote de prendas a un taller para comenzar la confección.</p>
-                  <AsignarTallerModal ordenId={orden.id} talleres={talleres} pendientes={pendientesPorAsignar} isFirst={true} mostrarPrecios={mostrarPrecios} />
+                  <AsignarTallerModal
+                    ordenId={orden.id}
+                    talleres={talleres}
+                    pendientes={pendientesPorAsignar}
+                    isFirst={true}
+                    mostrarPrecios={mostrarPrecios}
+                    insumosSugeridos={resumenInsumosTaller}
+                  />
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100">

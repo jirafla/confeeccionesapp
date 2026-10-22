@@ -153,7 +153,18 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
                     className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-sm"
                   >
                     <div className="min-w-0 pr-2">
-                      <span className="text-[11px] font-bold uppercase text-slate-400 block">{insumo.tipo === 'UNIDAD' ? 'Por unidad' : 'Por medida'}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold uppercase text-slate-400">
+                          {insumo.tipo === 'UNIDAD' ? 'Por unidad' : 'Por medida'}
+                        </span>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          insumo.porColor !== false
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'bg-slate-200/70 text-slate-600'
+                        }`}>
+                          {insumo.porColor !== false ? 'Al tono' : 'Estándar'}
+                        </span>
+                      </div>
                       <p className="font-semibold text-slate-800 truncate">{insumo.nombre}</p>
                     </div>
                     <div className="text-right shrink-0">
