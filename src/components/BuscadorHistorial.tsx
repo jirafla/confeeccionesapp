@@ -14,7 +14,7 @@ export default function BuscadorHistorial() {
   // Debounce logic
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams(searchParams.toString());
       if (query) {
         params.set("q", query);
       } else {

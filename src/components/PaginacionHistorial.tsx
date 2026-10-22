@@ -19,7 +19,7 @@ export default function PaginacionHistorial({
   if (totalPages <= 1) return null;
 
   const navigate = (page: number) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     params.set("p", page.toString());
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };

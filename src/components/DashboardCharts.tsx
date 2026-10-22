@@ -1,13 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
-
-const COLORS = {
-  EN_PROCESO: "#3b82f6", // blue-500
-  DEMORADO: "#ef4444",   // red-500
-  ENTREGADO: "#22c55e",  // green-500
-  CANCELADO: "#94a3b8"   // slate-400
-};
 
 export default function DashboardCharts({ 
   lotesPorEstado,
@@ -16,6 +10,29 @@ export default function DashboardCharts({
   lotesPorEstado: { name: string, value: number, fill: string }[],
   datosProduccion: { name: string, total: number, pagado: number }[]
 }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[330px] flex items-center justify-center">
+          <div className="w-full h-full bg-slate-50/70 rounded-xl animate-pulse flex items-center justify-center text-xs text-slate-400">
+            Cargando gráficos...
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-[330px] flex items-center justify-center">
+          <div className="w-full h-full bg-slate-50/70 rounded-xl animate-pulse flex items-center justify-center text-xs text-slate-400">
+            Cargando gráficos...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
