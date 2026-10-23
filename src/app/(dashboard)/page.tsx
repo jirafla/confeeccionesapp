@@ -9,7 +9,8 @@ import {
   ArrowRight,
   Shirt,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Scissors
 } from "lucide-react";
 import DashboardCharts from "@/components/DashboardCharts";
 import BuscadorHistorial from "@/components/BuscadorHistorial";
@@ -66,17 +67,20 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
   });
 
   const totalPrendas = ordenes.reduce((acc, o) => acc + o.cantidadTotal, 0);
-  
-  const prendasAsignadas = ordenes.reduce((acc, o) => 
-    acc + o.asignaciones.reduce((sum, a) => sum + a.cantidadAsignada, 0), 0);
 
   const prendasBuenas = ordenes.reduce((acc, o) => 
     acc + o.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0), 0);
 
-  const porcentajeCompletado = totalPrendas === 0 ? 0 : Math.round((prendasBuenas / totalPrendas) * 100);
-  const porcentajeAsignado = totalPrendas === 0 ? 0 : Math.round((prendasAsignadas / totalPrendas) * 100);
+  const ordenesCorteList = ordenes.filter(o => o.estado === "CORTE");
+  const ordenesConfeccionList = ordenes.filter(o => o.estado === "CONFECCION");
+  const ordenesEntregadasAll = ordenes.filter(o => o.estado === "ENTREGADO");
 
-  const ordenesActivas = ordenes.filter(o => o.estado !== "ENTREGADO").length;
+  const prendasEnCorte = ordenesCorteList.reduce((acc, o) => acc + o.cantidadTotal, 0);
+  const prendasEnConfeccion = ordenesConfeccionList.reduce((acc, o) => acc + o.cantidadTotal, 0);
+  const prendasEntregadas = ordenesEntregadasAll.reduce((acc, o) => {
+    const buenasOrden = o.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
+    return acc + (buenasOrden > 0 ? buenasOrden : o.cantidadTotal);
+  }, 0);
 
   // Órdenes entregadas al cliente para el historial (Paginadas y Filtradas)
   const historialWhere: Prisma.OrdenProduccionWhereInput = {
@@ -110,9 +114,9 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
 
   // Data for charts
   const ordenesPorEstado = [
-    { name: "Corte", value: ordenes.filter(o => o.estado === "CORTE").length, fill: "#f97316" },
-    { name: "Confección", value: ordenes.filter(o => o.estado === "CONFECCION").length, fill: "#3b82f6" },
-    { name: "Entregado", value: ordenes.filter(o => o.estado === "ENTREGADO").length, fill: "#22c55e" }
+    { name: "Corte", value: ordenesCorteList.length, fill: "#f97316" },
+    { name: "Confección", value: ordenesConfeccionList.length, fill: "#3b82f6" },
+    { name: "Entregado", value: ordenesEntregadasAll.length, fill: "#22c55e" }
   ].filter(item => item.value > 0);
 
   const datosProduccion = [
@@ -136,7 +140,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
           </Link>
           <Link 
             href="/talleres" 
-            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
+            className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
           >
             <Factory className="w-4 h-4 text-slate-400" /> Ver Talleres
           </Link>
@@ -214,43 +218,85 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
         </div>
       </div>
 
-      {/* SECCIÓN 2: KPIS DE PRODUCCIÓN */}
+      {/* SECCIÓN 2: PRENDAS POR ETAPA (CLICABLES CON FILTRO A ÓRDENES) */}
       <div>
-        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
-          Avance de Producción
-        </h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avance Entregas</p>
-            <p className="mt-2 text-2xl sm:text-3xl font-black text-slate-900">{porcentajeCompletado}%</p>
-            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
-              <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${porcentajeCompletado}%` }}></div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+            Avance de Producción
+          </h2>
+          <Link href="/ordenes" className="text-xs font-semibold text-blue-600 hover:underline">
+            Ver todas las órdenes →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <Link
+            href="/ordenes?estado=CORTE"
+            className="group bg-white p-4 sm:p-5 rounded-2xl border border-orange-200/80 shadow-sm bg-gradient-to-br from-white to-orange-50/30 hover:border-orange-400 hover:shadow-md transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-orange-700 uppercase tracking-wider">Prendas en Corte</span>
+              <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-105 transition-transform">
+                <Scissors className="w-4 h-4" />
+              </div>
             </div>
-          </div>
-
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Prendas Asignadas</p>
-            <p className="mt-2 text-2xl sm:text-3xl font-black text-slate-900">
-              {prendasAsignadas} <span className="text-xs font-bold text-slate-400">/ {totalPrendas}</span>
-            </p>
-            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
-              <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${porcentajeAsignado}%` }}></div>
+            <div className="mt-3 flex items-end justify-between">
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-orange-600">
+                  {prendasEnCorte.toLocaleString("es-CO")} <span className="text-xs font-bold text-slate-400">uds</span>
+                </p>
+                <p className="text-xs text-orange-700 font-medium mt-1">
+                  {ordenesCorteList.length} {ordenesCorteList.length === 1 ? "orden en corte" : "órdenes en corte"}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-orange-400 group-hover:translate-x-1 transition-transform" />
             </div>
-          </div>
+          </Link>
 
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Prendas Buenas</p>
-            <p className="mt-2 text-2xl sm:text-3xl font-black text-emerald-600">
-              {prendasBuenas} <span className="text-xs font-bold text-slate-400">uds</span>
-            </p>
-            <p className="text-xs text-slate-500 mt-2">Recibidas con calidad</p>
-          </div>
+          <Link
+            href="/ordenes?estado=CONFECCION"
+            className="group bg-white p-4 sm:p-5 rounded-2xl border border-blue-200/80 shadow-sm bg-gradient-to-br from-white to-blue-50/30 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Prendas en Confección</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
+                <Shirt className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-end justify-between">
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-blue-600">
+                  {prendasEnConfeccion.toLocaleString("es-CO")} <span className="text-xs font-bold text-slate-400">uds</span>
+                </p>
+                <p className="text-xs text-blue-700 font-medium mt-1">
+                  {ordenesConfeccionList.length} {ordenesConfeccionList.length === 1 ? "orden en confección" : "órdenes en confección"}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
 
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Órdenes Activas</p>
-            <p className="mt-2 text-2xl sm:text-3xl font-black text-slate-900">{ordenesActivas}</p>
-            <p className="text-xs text-slate-500 mt-2">{ordenesEntregadas.length} órdenes entregadas</p>
-          </div>
+          <Link
+            href="/ordenes?estado=ENTREGADO"
+            className="group bg-white p-4 sm:p-5 rounded-2xl border border-emerald-200/80 shadow-sm bg-gradient-to-br from-white to-emerald-50/30 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Prendas Entregadas</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+                <PackageCheck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-end justify-between">
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-emerald-600">
+                  {prendasEntregadas.toLocaleString("es-CO")} <span className="text-xs font-bold text-slate-400">uds</span>
+                </p>
+                <p className="text-xs text-emerald-700 font-medium mt-1">
+                  {ordenesEntregadasAll.length} {ordenesEntregadasAll.length === 1 ? "orden entregada" : "órdenes entregadas"}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
         </div>
       </div>
 
