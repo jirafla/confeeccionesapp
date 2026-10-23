@@ -123,259 +123,291 @@ export default function DescargarOrdenPdfButton({
         }
       };
 
-      // ================= ENCABEZADO =================
-      doc.setFillColor(15, 23, 42); // slate-900
-      doc.roundedRect(margin, y, contentW, 24, 3, 3, "F");
+      // ================= ENCABEZADO (BLANCO Y NEGRO — AHORRO DE TINTA) =================
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.5);
+      doc.rect(margin, y, contentW, 22, "D");
 
-      doc.setTextColor(148, 163, 184); // slate-400
+      doc.setTextColor(60, 60, 60);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
-      doc.text((empresaNombre || " TALLER DE CONFECCIÓN").toUpperCase(), margin + 6, y + 7);
+      doc.text((empresaNombre || "TALLER DE CONFECCIÓN").toUpperCase(), margin + 5, y + 6.5);
 
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.text("ORDEN DE PRODUCCIÓN — FICHA DE CORTE", margin + 6, y + 15);
+      doc.setFontSize(13.5);
+      doc.text("ORDEN DE PRODUCCIÓN — FICHA DE CORTE", margin + 5, y + 13.5);
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
-      doc.setTextColor(203, 213, 225);
-      doc.text(`Fecha de emisión: ${fechaCreacion}   |   Etapa: ${estadoLabel.toUpperCase()}`, margin + 6, y + 20.5);
+      doc.setTextColor(40, 40, 40);
+      doc.text(`Fecha: ${fechaCreacion}   |   Estado: ${estadoLabel.toUpperCase()}`, margin + 5, y + 19);
 
-      // Badge con número de orden a la derecha
+      // Recuadro de número de orden a la derecha (borde grueso en B/N)
       const ordenBadgeText = `ORDEN #${nombreOrden}`;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      const badgeW = Math.max(doc.getTextWidth(ordenBadgeText) + 10, 38);
-      doc.setFillColor(37, 99, 235); // blue-600
-      doc.roundedRect(pageW - margin - badgeW - 5, y + 5, badgeW, 14, 2, 2, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.text(ordenBadgeText, pageW - margin - 5 - badgeW / 2, y + 13.8, { align: "center" });
+      const badgeW = Math.max(doc.getTextWidth(ordenBadgeText) + 10, 40);
+      doc.setLineWidth(0.6);
+      doc.rect(pageW - margin - badgeW - 4, y + 4, badgeW, 14, "D");
+      doc.setTextColor(0, 0, 0);
+      doc.text(ordenBadgeText, pageW - margin - 4 - badgeW / 2, y + 12.8, { align: "center" });
+      doc.setLineWidth(0.25);
 
-      y += 29;
+      y += 26;
 
-      // ================= FICHA GENERAL + IMAGEN =================
+      // ================= DATOS GENERALES + IMAGEN DE REFERENCIA =================
       const imgData = disenoArchivoUrl ? await cargarImagenBase64(disenoArchivoUrl) : null;
-      const boxH = imgData ? 38 : 26;
+      const boxH = imgData ? 36 : 24;
 
-      doc.setFillColor(248, 250, 252); // slate-50
-      doc.setDrawColor(226, 232, 240); // slate-200
-      doc.roundedRect(margin, y, contentW, boxH, 2.5, 2.5, "FD");
+      doc.setDrawColor(0, 0, 0);
+      doc.rect(margin, y, contentW, boxH, "D");
 
-      const infoW = imgData ? contentW - 42 : contentW;
+      const infoW = imgData ? contentW - 40 : contentW;
       const col1X = margin + 5;
       const col2X = margin + infoW * 0.52;
 
       // Referencia
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
-      doc.setTextColor(100, 116, 139);
-      doc.text("REFERENCIA / PRENDA", col1X, y + 7);
+      doc.setTextColor(80, 80, 80);
+      doc.text("REFERENCIA / PRENDA:", col1X, y + 6.5);
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(11.5);
+      doc.setTextColor(0, 0, 0);
       const refTexto = referenciaNombre
         ? `${referenciaCodigo} — ${referenciaNombre}`
         : referenciaCodigo;
       const refLines = doc.splitTextToSize(refTexto, infoW * 0.48 - 4);
-      doc.text(refLines.slice(0, 2), col1X, y + 13);
+      doc.text(refLines.slice(0, 2), col1X, y + 12);
 
       // Cliente
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
-      doc.setTextColor(100, 116, 139);
-      doc.text("CLIENTE", col2X, y + 7);
+      doc.setTextColor(80, 80, 80);
+      doc.text("CLIENTE:", col2X, y + 6.5);
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(0, 0, 0);
       const cliLines = doc.splitTextToSize(clienteNombre, infoW * 0.45 - 6);
-      doc.text(cliLines.slice(0, 2), col2X, y + 13);
+      doc.text(cliLines.slice(0, 2), col2X, y + 12);
 
       // Total prendas a cortar
-      const row2Y = imgData ? y + 24 : y + 18;
+      const row2Y = imgData ? y + 23 : y + 16.5;
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(8);
+      doc.setTextColor(80, 80, 80);
       doc.text("TOTAL A CORTAR:", col1X, row2Y + 4);
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(37, 99, 235);
-      doc.text(`${cantidadTotal} PRENDAS`, col1X + 28, row2Y + 4.2);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${cantidadTotal} PRENDAS`, col1X + 29, row2Y + 4.2);
 
       if (imgData) {
         try {
-          const imgX = pageW - margin - 37;
-          const imgY = y + 3;
-          doc.setFillColor(255, 255, 255);
-          doc.setDrawColor(203, 213, 225);
-          doc.roundedRect(imgX - 1, imgY - 1, 34, 34, 1.5, 1.5, "FD");
-          doc.addImage(imgData.dataUrl, imgData.format, imgX, imgY, 32, 32, undefined, "FAST");
+          const imgX = pageW - margin - 35;
+          const imgY = y + 2.5;
+          doc.setDrawColor(120, 120, 120);
+          doc.rect(imgX - 0.5, imgY - 0.5, 32, 32, "D");
+          doc.addImage(imgData.dataUrl, imgData.format, imgX, imgY, 31, 31, undefined, "FAST");
         } catch {
-          // Si falla el renderizado de la imagen, continuamos sin bloquear el PDF
+          // Continuar si la imagen falla
         }
       }
 
       y += boxH + 7;
 
-      // ================= SECCIÓN 1: VARIANTES A CORTAR =================
-      checkPageBreak(30);
+      // ================= 1. PROMEDIOS DE TELA =================
+      checkPageBreak(28);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
-      doc.setTextColor(15, 23, 42);
-      doc.text("1. DESGLOSE DE VARIANTES / COLORES A CORTAR", margin, y);
-      y += 3;
+      doc.setTextColor(0, 0, 0);
+      doc.text("1. PROMEDIOS Y CONSUMO ESTIMADO DE TELA", margin, y);
+      y += 2.5;
 
-      // Cabecera de tabla
-      doc.setFillColor(241, 245, 249);
-      doc.setDrawColor(203, 213, 225);
+      doc.setFillColor(235, 235, 235);
+      doc.setDrawColor(0, 0, 0);
       doc.rect(margin, y, contentW, 8, "FD");
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
-      doc.setTextColor(51, 65, 85);
-      doc.text("#", margin + 4, y + 5.3);
-      doc.text("VARIANTE / COLOR / DETALLE", margin + 15, y + 5.3);
-      doc.text("CANT. PROGRAMADA", margin + 118, y + 5.3);
-      doc.text("CORTADO (VERIFICAR)", margin + 152, y + 5.3);
+      doc.setTextColor(0, 0, 0);
+      doc.text("TELA", margin + 4, y + 5.3);
+      doc.text("TIPO / ESPECIFICACIÓN", margin + 48, y + 5.3);
+      doc.text("PROMEDIO POR PRENDA", margin + 112, y + 5.3);
+      doc.text("TOTAL ESTIMADO ORDEN", margin + 150, y + 5.3);
       y += 8;
 
-      if (variantes.length === 0) {
+      if (telas.length === 0) {
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
+        doc.setFontSize(8.5);
+        doc.setTextColor(60, 60, 60);
         doc.rect(margin, y, contentW, 8, "D");
-        doc.text("Sin desglose de variantes especificado", margin + 6, y + 5.3);
+        doc.text("Sin promedios de tela registrados en la referencia", margin + 4, y + 5.3);
         y += 8;
       } else {
-        variantes.forEach((v, idx) => {
+        telas.forEach((t) => {
           checkPageBreak(9);
-          if (idx % 2 === 1) {
-            doc.setFillColor(248, 250, 252);
-            doc.rect(margin, y, contentW, 8.5, "FD");
-          } else {
-            doc.rect(margin, y, contentW, 8.5, "D");
-          }
-
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(9);
-          doc.setTextColor(71, 85, 105);
-          doc.text(String(idx + 1), margin + 4, y + 5.7);
-
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(15, 23, 42);
-          const varTexto = doc.splitTextToSize(v.detalle || "—", 95)[0];
-          doc.text(varTexto, margin + 15, y + 5.7);
-
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(37, 99, 235);
-          doc.text(`${v.cantidad ?? "—"} uds`, margin + 123, y + 5.7);
-
-          // Casilla de chequeo para mesa de corte
-          doc.setDrawColor(148, 163, 184);
-          doc.rect(margin + 155, y + 2, 4.5, 4.5, "D");
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.setTextColor(148, 163, 184);
-          doc.text("______ uds", margin + 162, y + 5.7);
-
-          doc.setDrawColor(203, 213, 225);
-          y += 8.5;
-        });
-      }
-
-      // Fila total
-      checkPageBreak(10);
-      doc.setFillColor(239, 246, 255); // blue-50
-      doc.setDrawColor(191, 219, 254);
-      doc.rect(margin, y, contentW, 8.5, "FD");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(30, 58, 138);
-      doc.text("TOTAL PRENDAS DE LA ORDEN", margin + 15, y + 5.7);
-      doc.text(`${cantidadTotal} uds`, margin + 123, y + 5.7);
-      y += 14;
-
-      // ================= SECCIÓN 2: TELAS Y CONSUMO =================
-      if (telas.length > 0) {
-        checkPageBreak(28);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(15, 23, 42);
-        doc.text("2. TELAS Y CONSUMO ESTIMADO", margin, y);
-        y += 3;
-
-        doc.setFillColor(241, 245, 249);
-        doc.setDrawColor(203, 213, 225);
-        doc.rect(margin, y, contentW, 8, "FD");
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(51, 65, 85);
-        doc.text("TELA", margin + 4, y + 5.3);
-        doc.text("TIPO / REFERENCIA DE TELA", margin + 48, y + 5.3);
-        doc.text("PROMEDIO / PRENDA", margin + 118, y + 5.3);
-        doc.text("TOTAL ESTIMADO", margin + 154, y + 5.3);
-        y += 8;
-
-        telas.forEach((t, idx) => {
-          checkPageBreak(9);
-          if (idx % 2 === 1) {
-            doc.setFillColor(248, 250, 252);
-            doc.rect(margin, y, contentW, 8, "FD");
-          } else {
-            doc.rect(margin, y, contentW, 8, "D");
-          }
+          doc.setDrawColor(0, 0, 0);
+          doc.rect(margin, y, contentW, 8, "D");
 
           const totalTela = Number((t.promedio * cantidadTotal).toFixed(2));
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(9);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0, 0, 0);
           doc.text(doc.splitTextToSize(t.nombre, 40)[0], margin + 4, y + 5.4);
 
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(71, 85, 105);
-          doc.text(doc.splitTextToSize(t.tipo || "—", 65)[0], margin + 48, y + 5.4);
-
-          doc.text(`${t.promedio} m`, margin + 123, y + 5.4);
+          doc.setTextColor(20, 20, 20);
+          doc.text(doc.splitTextToSize(t.tipo || "—", 60)[0], margin + 48, y + 5.4);
 
           doc.setFont("helvetica", "bold");
-          doc.setTextColor(37, 99, 235);
-          doc.text(`${totalTela} m`, margin + 156, y + 5.4);
+          doc.text(`${t.promedio} m / prenda`, margin + 115, y + 5.4);
+
+          doc.text(`${totalTela} m`, margin + 154, y + 5.4);
 
           y += 8;
         });
-
-        y += 6;
       }
 
-      // ================= SECCIÓN 3: INSUMOS POR COLOR =================
-      if (desgloseInsumos.length > 0) {
-        checkPageBreak(28);
-        const numSeccion = telas.length > 0 ? "3" : "2";
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.setTextColor(15, 23, 42);
-        doc.text(`${numSeccion}. INSUMOS A ALISTAR POR COLOR`, margin, y);
-        y += 3;
+      y += 7;
 
-        doc.setFillColor(241, 245, 249);
-        doc.setDrawColor(203, 213, 225);
-        doc.rect(margin, y, contentW, 8, "FD");
+      // ================= 2. TELAS Y CANTIDADES PARA CORTE (POR COLOR / VARIANTE) =================
+      checkPageBreak(30);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text("2. DESGLOSE DE TELAS Y PRENDAS PARA CORTE POR COLOR", margin, y);
+      y += 2.5;
 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(51, 65, 85);
-        doc.text("INSUMO", margin + 4, y + 5.3);
-        doc.text("CONSUMO/PDA", margin + 52, y + 5.3);
-        doc.text("TOTAL ORDEN", margin + 82, y + 5.3);
-        doc.text("PARAMETRIZACIÓN POR COLOR (ALISTAR)", margin + 112, y + 5.3);
+      doc.setFillColor(235, 235, 235);
+      doc.setDrawColor(0, 0, 0);
+      doc.rect(margin, y, contentW, 8, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      doc.text("#", margin + 3, y + 5.3);
+      doc.text("COLOR / VARIANTE", margin + 12, y + 5.3);
+      doc.text("PRENDAS", margin + 74, y + 5.3);
+      doc.text("TELA REQUERIDA SEGÚN PROMEDIO", margin + 98, y + 5.3);
+      doc.text("VERIFICAR CORTE", margin + 154, y + 5.3);
+      y += 8;
+
+      if (variantes.length === 0) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(60, 60, 60);
+        doc.rect(margin, y, contentW, 8, "D");
+        doc.text("Sin desglose de colores/variantes", margin + 4, y + 5.3);
         y += 8;
+      } else {
+        variantes.forEach((v, idx) => {
+          const cantPrendas = v.cantidad ?? 0;
+          const textoMetrosPorTela =
+            telas.length > 0 && cantPrendas > 0
+              ? telas
+                  .map((t) => {
+                    const metros = Number((t.promedio * cantPrendas).toFixed(2));
+                    const etiquetaTela = t.tipo ? `${t.nombre} (${t.tipo})` : t.nombre;
+                    return `${etiquetaTela}: ${metros} m`;
+                  })
+                  .join("  |  ")
+              : "—";
 
-        desgloseInsumos.forEach((ins, idx) => {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          const wrappedTela = doc.splitTextToSize(textoMetrosPorTela, 52);
+          const rowH = Math.max(8.5, wrappedTela.length * 4.5 + 3.5);
+
+          checkPageBreak(rowH + 2);
+          doc.setDrawColor(0, 0, 0);
+          doc.rect(margin, y, contentW, rowH, "D");
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(40, 40, 40);
+          doc.text(String(idx + 1), margin + 3, y + 5.6);
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(0, 0, 0);
+          const varTexto = doc.splitTextToSize(v.detalle || "—", 58)[0];
+          doc.text(varTexto, margin + 12, y + 5.6);
+
+          doc.setFont("helvetica", "bold");
+          doc.text(`${v.cantidad ?? "—"} uds`, margin + 74, y + 5.6);
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.2);
+          doc.setTextColor(20, 20, 20);
+          doc.text(wrappedTela, margin + 98, y + 5.5);
+
+          // Casilla de chequeo en blanco y negro
+          doc.setDrawColor(0, 0, 0);
+          doc.rect(margin + 154, y + 2, 4.2, 4.2, "D");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(60, 60, 60);
+          doc.text("______ uds", margin + 160, y + 5.6);
+
+          y += rowH;
+        });
+      }
+
+      // Fila total de corte
+      checkPageBreak(10);
+      doc.setFillColor(242, 242, 242);
+      doc.setDrawColor(0, 0, 0);
+      doc.rect(margin, y, contentW, 8.5, "FD");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("TOTAL A CORTAR", margin + 12, y + 5.7);
+      doc.text(`${cantidadTotal} uds`, margin + 74, y + 5.7);
+      if (telas.length > 0) {
+        const totalGeneralTelas = telas
+          .map((t) => `${t.nombre}: ${Number((t.promedio * cantidadTotal).toFixed(2))} m`)
+          .join(" | ");
+        doc.setFontSize(8.2);
+        doc.text(doc.splitTextToSize(totalGeneralTelas, 80)[0], margin + 98, y + 5.7);
+      }
+      y += 14;
+
+      // ================= 3. INSUMOS A ALISTAR POR COLOR =================
+      checkPageBreak(28);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text("3. INSUMOS A ALISTAR POR COLOR", margin, y);
+      y += 2.5;
+
+      doc.setFillColor(235, 235, 235);
+      doc.setDrawColor(0, 0, 0);
+      doc.rect(margin, y, contentW, 8, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      doc.text("INSUMO", margin + 4, y + 5.3);
+      doc.text("MEDIDA / PDA", margin + 52, y + 5.3);
+      doc.text("TOTAL ORDEN", margin + 82, y + 5.3);
+      doc.text("PARAMETRIZACIÓN POR COLOR (ALISTAR)", margin + 112, y + 5.3);
+      y += 8;
+
+      if (desgloseInsumos.length === 0) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(60, 60, 60);
+        doc.rect(margin, y, contentW, 8, "D");
+        doc.text("Sin insumos registrados para esta referencia", margin + 4, y + 5.3);
+        y += 8;
+      } else {
+        desgloseInsumos.forEach((ins) => {
           const desgloseTexto =
             ins.agrupadoPorColor.length > 0
               ? ins.agrupadoPorColor
@@ -389,69 +421,64 @@ export default function DescargarOrdenPdfButton({
           const rowH = Math.max(8, wrappedDesglose.length * 4.5 + 3.5);
 
           checkPageBreak(rowH + 2);
-          if (idx % 2 === 1) {
-            doc.setFillColor(248, 250, 252);
-            doc.rect(margin, y, contentW, rowH, "FD");
-          } else {
-            doc.rect(margin, y, contentW, rowH, "D");
-          }
+          doc.setDrawColor(0, 0, 0);
+          doc.rect(margin, y, contentW, rowH, "D");
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(9);
-          doc.setTextColor(15, 23, 42);
+          doc.setTextColor(0, 0, 0);
           doc.text(doc.splitTextToSize(ins.nombre, 45)[0], margin + 4, y + 5.4);
 
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8.5);
-          doc.setTextColor(71, 85, 105);
+          doc.setTextColor(30, 30, 30);
           doc.text(`${ins.consumoUnitario} ${ins.unidadLabel}`, margin + 52, y + 5.4);
 
           doc.setFont("helvetica", "bold");
-          doc.setTextColor(79, 70, 229); // indigo-600
+          doc.setTextColor(0, 0, 0);
           doc.text(`${ins.totalCantidad} ${ins.unidadLabel}`, margin + 82, y + 5.4);
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8.5);
-          doc.setTextColor(30, 41, 59);
+          doc.setTextColor(0, 0, 0);
           doc.text(wrappedDesglose, margin + 112, y + 5.4);
 
           y += rowH;
         });
-
-        y += 6;
       }
 
-      // ================= SECCIÓN 4: OBSERVACIONES Y CONTROL DE CORTE =================
-      checkPageBreak(48);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(15, 23, 42);
-      doc.text("OBSERVACIONES Y CONTROL EN MESA DE CORTE", margin, y);
-      y += 3;
+      y += 7;
 
-      doc.setDrawColor(203, 213, 225);
-      doc.setFillColor(255, 255, 255);
-      doc.roundedRect(margin, y, contentW, 22, 2, 2, "FD");
+      // ================= OBSERVACIONES Y FIRMAS DE CONTROL =================
+      checkPageBreak(45);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(0, 0, 0);
+      doc.text("OBSERVACIONES Y CONTROL EN MESA DE CORTE", margin, y);
+      y += 2.5;
+
+      doc.setDrawColor(0, 0, 0);
+      doc.rect(margin, y, contentW, 20, "D");
 
       if (observacionesCorte && observacionesCorte.trim()) {
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(51, 65, 85);
+        doc.setFontSize(8.5);
+        doc.setTextColor(0, 0, 0);
         const obsLines = doc.splitTextToSize(observacionesCorte.trim(), contentW - 8);
-        doc.text(obsLines.slice(0, 4), margin + 4, y + 6);
+        doc.text(obsLines.slice(0, 4), margin + 4, y + 5.5);
       } else {
-        doc.setDrawColor(226, 232, 240);
-        doc.line(margin + 4, y + 8, pageW - margin - 4, y + 8);
-        doc.line(margin + 4, y + 14, pageW - margin - 4, y + 14);
-        doc.line(margin + 4, y + 20, pageW - margin - 4, y + 20);
+        doc.setDrawColor(180, 180, 180);
+        doc.line(margin + 4, y + 7, pageW - margin - 4, y + 7);
+        doc.line(margin + 4, y + 13, pageW - margin - 4, y + 13);
+        doc.line(margin + 4, y + 18, pageW - margin - 4, y + 18);
       }
 
-      y += 34;
+      y += 32;
 
-      // Líneas de firma
-      checkPageBreak(20);
+      // Líneas de firma en negro
+      checkPageBreak(18);
       const sigW = (contentW - 16) / 3;
-      doc.setDrawColor(148, 163, 184);
+      doc.setDrawColor(0, 0, 0);
 
       doc.line(margin, y, margin + sigW, y);
       doc.line(margin + sigW + 8, y, margin + sigW * 2 + 8, y);
@@ -459,7 +486,7 @@ export default function DescargarOrdenPdfButton({
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
-      doc.setTextColor(100, 116, 139);
+      doc.setTextColor(0, 0, 0);
       doc.text("RESPONSABLE DE CORTE (FIRMA)", margin + sigW / 2, y + 4.5, { align: "center" });
       doc.text("FECHA REAL DE CORTE", margin + sigW + 8 + sigW / 2, y + 4.5, { align: "center" });
       doc.text("TOTAL PRENDAS CORTADAS", margin + sigW * 2 + 16 + sigW / 2, y + 4.5, { align: "center" });
