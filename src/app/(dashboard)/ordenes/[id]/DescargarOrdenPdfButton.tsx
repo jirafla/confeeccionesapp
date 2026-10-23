@@ -272,17 +272,32 @@ export default function DescargarOrdenPdfButton({
 
       y += 7;
 
-      // ================= 2. TABLA DE CORTE (CON COLUMNAS DE CAPAS REQ Y CAPAS EXT) =================
+      // ================= 2. TABLA DE CORTE (CON TELA REQUERIDA SEGÚN PROMEDIO + CAPAS REQ / EXT) =================
       checkPageBreak(35);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(0, 0, 0);
-      doc.text("2. DESGLOSE DE CORTE Y CAPAS POR COLOR", margin, y);
+      doc.text("2. DESGLOSE DE TELAS, PRENDAS Y CAPAS PARA CORTE POR COLOR", margin, y);
       y += 2.5;
 
-      // Columnas de la tabla de corte:
-      // COLORES (40) | UNIDADES DE PEDIDO (22) | CAPAS REQ TELA 1..3 (3x17=51) | CAPAS EXT TELA 1..3 (3x17=51) | UNDS CORTADAS (18) = 182mm (contentW)
-      const colWidths = [40, 22, 17, 17, 17, 17, 17, 17, 18];
+      const numTelasCols = Math.max(1, Math.min(3, telas.length));
+      // Distribución exacta para sumar contentW (182 mm):
+      const colorW = numTelasCols === 1 ? 34 : numTelasCols === 2 ? 28 : 24;
+      const prendasW = numTelasCols === 3 ? 14 : 16;
+      const cortadasW = numTelasCols === 3 ? 17 : 18;
+      const capaColW = numTelasCols === 1 ? 19 : numTelasCols === 2 ? 15.5 : 13.5;
+      const totalCapasW = capaColW * (numTelasCols * 2);
+      const telaReqW = contentW - (colorW + prendasW + totalCapasW + cortadasW);
+
+      const colWidths = [
+        colorW,
+        prendasW,
+        telaReqW,
+        ...Array(numTelasCols).fill(capaColW),
+        ...Array(numTelasCols).fill(capaColW),
+        cortadasW,
+      ];
+
       const colX: number[] = [];
       let accX = margin;
       for (const w of colWidths) {
@@ -300,87 +315,125 @@ export default function DescargarOrdenPdfButton({
       }
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
+      doc.setFontSize(7.2);
       doc.setTextColor(0, 0, 0);
-      doc.text("COLORES", colX[0] + 3, y + 7);
+      doc.text("COLOR / VARIANTE", colX[0] + 2, y + 6.8);
 
       doc.setFontSize(6.5);
-      doc.text("UNIDADES", colX[1] + colWidths[1] / 2, y + 4.8, { align: "center" });
-      doc.text("DE PEDIDO", colX[1] + colWidths[1] / 2, y + 8.6, { align: "center" });
+      doc.text("PRENDAS", colX[1] + colWidths[1] / 2, y + 6.8, { align: "center" });
 
-      for (let t = 0; t < 3; t++) {
-        const cxReq = colX[2 + t] + colWidths[2 + t] / 2;
+      doc.setFontSize(6.8);
+      doc.text("TELA REQUERIDA SEGÚN PROMEDIO", colX[2] + 2.5, y + 6.8);
+
+      for (let t = 0; t < numTelasCols; t++) {
+        const reqIdx = 3 + t;
+        const cxReq = colX[reqIdx] + colWidths[reqIdx] / 2;
+        doc.setFontSize(6.2);
         doc.text("CAPAS", cxReq, y + 3.6, { align: "center" });
         doc.text("REQ TELA", cxReq, y + 6.8, { align: "center" });
         doc.text(String(t + 1), cxReq, y + 10, { align: "center" });
 
-        const cxExt = colX[5 + t] + colWidths[5 + t] / 2;
+        const extIdx = 3 + numTelasCols + t;
+        const cxExt = colX[extIdx] + colWidths[extIdx] / 2;
         doc.text("CAPAS", cxExt, y + 3.6, { align: "center" });
         doc.text("EXT TELA", cxExt, y + 6.8, { align: "center" });
         doc.text(String(t + 1), cxExt, y + 10, { align: "center" });
       }
 
-      const cxCort = colX[8] + colWidths[8] / 2;
+      const cortIdx = colWidths.length - 1;
+      const cxCort = colX[cortIdx] + colWidths[cortIdx] / 2;
+      doc.setFontSize(6.5);
       doc.text("UNDS", cxCort, y + 4.8, { align: "center" });
       doc.text("CORTADAS", cxCort, y + 8.6, { align: "center" });
 
       y += headerH;
 
-      // Filas: los colores de la orden + 2 filas en blanco adicionales para anotaciones en mesa de corte
-      const totalFilas = Math.max(variantes.length + 2, 5);
-      const filaH = 7.5;
+      // Renderizar únicamente las filas exactas de colores/tallas que trae la orden (sin filas vacías extra)
+      if (variantes.length === 0) {
+        doc.rect(margin, y, contentW, 8, "D");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(60, 60, 60);
+        doc.text("Sin desglose de colores/variantes", margin + 4, y + 5.3);
+        y += 8;
+      } else {
+        variantes.forEach((v) => {
+          const cantPrendas = v.cantidad ?? 0;
+          const textoMetrosPorTela =
+            telas.length > 0 && cantPrendas > 0
+              ? telas
+                  .map((t) => {
+                    const metros = Number((t.promedio * cantPrendas).toFixed(2));
+                    const etiquetaTela = t.tipo ? `${t.nombre} (${t.tipo})` : t.nombre;
+                    return `${etiquetaTela}: ${metros} m`;
+                  })
+                  .join("  |  ")
+              : "—";
 
-      for (let r = 0; r < totalFilas; r++) {
-        checkPageBreak(filaH + 12);
-        const v = variantes[r];
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          const wrappedTela = doc.splitTextToSize(textoMetrosPorTela, telaReqW - 4);
+          const filaH = Math.max(8.5, wrappedTela.length * 4.2 + 3.5);
 
-        for (let c = 0; c < colWidths.length; c++) {
-          doc.rect(colX[c], y, colWidths[c], filaH, "D");
-        }
+          checkPageBreak(filaH + 12);
 
-        if (v) {
+          for (let c = 0; c < colWidths.length; c++) {
+            doc.rect(colX[c], y, colWidths[c], filaH, "D");
+          }
+
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9);
+          doc.setFontSize(8.8);
           doc.setTextColor(0, 0, 0);
-          doc.text(doc.splitTextToSize(v.detalle || "—", colWidths[0] - 5)[0] || "", colX[0] + 3, y + 5.1);
+          doc.text(doc.splitTextToSize(v.detalle || "—", colorW - 4)[0] || "", colX[0] + 2, y + 5.4);
 
           if (v.cantidad !== null) {
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(9.5);
-            doc.text(String(v.cantidad), colX[1] + colWidths[1] / 2, y + 5.1, { align: "center" });
+            doc.setFontSize(8.8);
+            doc.text(`${v.cantidad} uds`, colX[1] + colWidths[1] / 2, y + 5.4, { align: "center" });
           }
-        }
 
-        y += filaH;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(20, 20, 20);
+          doc.text(wrappedTela, colX[2] + 2, y + 5.2);
+
+          y += filaH;
+        });
       }
 
       // Fila final TOTAL de la tabla de corte
-      checkPageBreak(10);
-      const totalRowH = 8;
+      const totalGeneralTelas =
+        telas.length > 0
+          ? telas
+              .map((t) => `${t.nombre}: ${Number((t.promedio * cantidadTotal).toFixed(2))} m`)
+              .join(" | ")
+          : "";
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      const wrappedTotalTelas = totalGeneralTelas
+        ? doc.splitTextToSize(totalGeneralTelas, telaReqW - 4)
+        : [];
+      const totalRowH = Math.max(8.5, wrappedTotalTelas.length * 4.2 + 3.5);
+
+      checkPageBreak(totalRowH + 4);
       doc.setFillColor(242, 242, 242);
       doc.setDrawColor(0, 0, 0);
       doc.rect(margin, y, contentW, totalRowH, "FD");
 
-      // Divisiones en la fila TOTAL: COLORES | TOTAL PEDIDO | Celdas de suma de capas | TOTAL UNDS CORTADAS
-      doc.rect(colX[0], y, colWidths[0], totalRowH, "D");
-      doc.rect(colX[1], y, colWidths[1], totalRowH, "D");
-      doc.rect(colX[2], y, colWidths[2], totalRowH, "D");
-      doc.rect(colX[3], y, colWidths[3], totalRowH, "D");
-      doc.rect(colX[4], y, colWidths[4], totalRowH, "D");
-
-      const startTotalCortadasX = colX[5];
-      const totalCortadasW = margin + contentW - startTotalCortadasX;
-      doc.rect(startTotalCortadasX, y, totalCortadasW, totalRowH, "D");
-      doc.rect(colX[8], y, colWidths[8], totalRowH, "D");
+      for (let c = 0; c < colWidths.length; c++) {
+        doc.rect(colX[c], y, colWidths[c], totalRowH, "D");
+      }
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(0, 0, 0);
-      doc.text("TOTAL", colX[0] + 3, y + 5.4);
-      doc.text(String(cantidadTotal), colX[1] + colWidths[1] / 2, y + 5.4, { align: "center" });
+      doc.text("TOTAL A CORTAR", colX[0] + 2, y + 5.5);
+      doc.text(`${cantidadTotal} uds`, colX[1] + colWidths[1] / 2, y + 5.5, { align: "center" });
 
-      doc.setFontSize(8);
-      doc.text("TOTAL UNDS CORTADAS:", startTotalCortadasX + 2.5, y + 5.3);
+      if (wrappedTotalTelas.length > 0) {
+        doc.setFontSize(7.8);
+        doc.text(wrappedTotalTelas, colX[2] + 2, y + 5.3);
+      }
 
       y += totalRowH + 7;
 
