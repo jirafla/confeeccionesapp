@@ -492,8 +492,8 @@ export default function DescargarOrdenPdfButton({
       doc.text("TOTAL PRENDAS CORTADAS", margin + sigW * 2 + 16 + sigW / 2, y + 4.5, { align: "center" });
 
       const safeFilename = nombreOrden.replace(/[^a-zA-Z0-9_-]/g, "_");
-      doc.save(`Orden_Corte_${safeFilename}.pdf`);
-      toast.success(`PDF de la orden ${nombreOrden} descargado`);
+      doc.save(`Ficha_Corte_${safeFilename}.pdf`);
+      toast.success(`Ficha de corte ${nombreOrden} (B/N) descargada`);
     } catch (err) {
       console.error("Error generando PDF:", err);
       toast.error("No se pudo generar el PDF de la orden");
@@ -510,8 +510,8 @@ export default function DescargarOrdenPdfButton({
         disabled={generando}
         className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs disabled:opacity-50"
       >
-        {generando ? <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> : <FileDown className="w-4 h-4 text-blue-600" />}
-        <span>{generando ? "Generando PDF..." : "Descargar PDF"}</span>
+        {generando ? <Loader2 className="w-4 h-4 animate-spin text-slate-900" /> : <FileDown className="w-4 h-4 text-slate-900" />}
+        <span>{generando ? "Generando PDF..." : "Descargar Ficha PDF"}</span>
       </button>
     );
   }
@@ -524,7 +524,7 @@ export default function DescargarOrdenPdfButton({
       className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-sm disabled:opacity-50 shrink-0"
     >
       {generando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-      <span>{generando ? "Generando PDF..." : "Descargar Orden en PDF"}</span>
+      <span>{generando ? "Generando PDF..." : "Descargar Ficha de Corte (PDF)"}</span>
     </button>
   );
 }
