@@ -49,7 +49,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
 
   // Total lotes actualmente en talleres
   const totalLotesEnConfeccion = talleres.reduce(
-    (acc, t) => acc + t.asignaciones.filter(a => a.estadoLote === "ASIGNADO").length, 
+    (acc, t) => acc + t.asignaciones.filter(a => a.estadoLote === "ASIGNADO" && a.orden.estado !== "ENTREGADO").length, 
     0
   );
 
@@ -224,7 +224,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
         </div>
       </div>
 
-      {/* SECCIÓN 2: PRENDAS POR ETAPA (CLICABLES CON FILTRO A ÓRDENES) */}
+      {/* SECCIÓN 2: AVANCE DE PRODUCCIÓN (CLICABLES CON FILTRO A ÓRDENES) */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
@@ -240,7 +240,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             className="group bg-white p-4 sm:p-5 rounded-2xl border border-orange-200/80 shadow-sm bg-gradient-to-br from-white to-orange-50/30 hover:border-orange-400 hover:shadow-md transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-orange-700 uppercase tracking-wider">Prendas en Corte</span>
+              <span className="text-xs font-bold text-orange-700 uppercase tracking-wider">Órdenes en Corte</span>
               <div className="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-105 transition-transform">
                 <Scissors className="w-4 h-4" />
               </div>
@@ -248,10 +248,10 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             <div className="mt-3 flex items-end justify-between">
               <div>
                 <p className="text-2xl sm:text-3xl font-black text-orange-600">
-                  {prendasEnCorte.toLocaleString("es-CO")} <span className="text-xs font-bold text-slate-400">uds</span>
+                  {ordenesCorteList.length}
                 </p>
                 <p className="text-xs text-orange-700 font-medium mt-1">
-                  {ordenesCorteList.length} {ordenesCorteList.length === 1 ? "orden en corte" : "órdenes en corte"}
+                  {prendasEnCorte.toLocaleString("es-CO")} prendas en corte
                 </p>
               </div>
               <ArrowRight className="w-4 h-4 text-orange-400 group-hover:translate-x-1 transition-transform" />
@@ -263,7 +263,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             className="group bg-white p-4 sm:p-5 rounded-2xl border border-blue-200/80 shadow-sm bg-gradient-to-br from-white to-blue-50/30 hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Prendas en Confección</span>
+              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Lotes en Talleres</span>
               <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
                 <Shirt className="w-4 h-4" />
               </div>
@@ -271,10 +271,10 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             <div className="mt-3 flex items-end justify-between">
               <div>
                 <p className="text-2xl sm:text-3xl font-black text-blue-600">
-                  {prendasEnConfeccion.toLocaleString("es-CO")} <span className="text-xs font-bold text-slate-400">uds</span>
+                  {totalLotesEnConfeccion}
                 </p>
                 <p className="text-xs text-blue-700 font-medium mt-1">
-                  {ordenesConfeccionList.length} {ordenesConfeccionList.length === 1 ? "orden en confección" : "órdenes en confección"}
+                  {ordenesConfeccionList.length} {ordenesConfeccionList.length === 1 ? "orden en confección" : "órdenes en confección"} ({prendasEnConfeccion.toLocaleString("es-CO")} uds)
                 </p>
               </div>
               <ArrowRight className="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
@@ -286,7 +286,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             className="group bg-white p-4 sm:p-5 rounded-2xl border border-emerald-200/80 shadow-sm bg-gradient-to-br from-white to-emerald-50/30 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Prendas Entregadas</span>
+              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Órdenes Entregadas</span>
               <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
                 <PackageCheck className="w-4 h-4" />
               </div>
@@ -294,10 +294,10 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             <div className="mt-3 flex items-end justify-between">
               <div>
                 <p className="text-2xl sm:text-3xl font-black text-emerald-600">
-                  {prendasEntregadas.toLocaleString("es-CO")} <span className="text-xs font-bold text-slate-400">uds</span>
+                  {ordenesEntregadasAll.length}
                 </p>
                 <p className="text-xs text-emerald-700 font-medium mt-1">
-                  {ordenesEntregadasAll.length} {ordenesEntregadasAll.length === 1 ? "orden entregada" : "órdenes entregadas"}
+                  {prendasEntregadas.toLocaleString("es-CO")} prendas entregadas
                 </p>
               </div>
               <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
