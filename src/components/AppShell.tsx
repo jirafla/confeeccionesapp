@@ -15,6 +15,7 @@ import {
   PanelLeftOpen
 } from "lucide-react";
 import { logout } from "@/app/login/actions";
+import PwaInstallButton from "./PwaInstallButton";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -102,6 +103,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         
         <div className={`${isCollapsed ? "p-3" : "p-6"} border-t border-slate-50`}>
+          <PwaInstallButton variant="sidebar" collapsed={isCollapsed} />
           <form action={logout}>
             <button 
               type="submit" 
@@ -126,14 +128,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="sm:hidden bg-white/80 backdrop-blur-xl border-b border-slate-100 h-16 flex items-center justify-between px-6 flex-shrink-0 sticky top-0 z-20">
+        <header className="sm:hidden bg-white/80 backdrop-blur-xl border-b border-slate-100 h-16 flex items-center justify-between px-4 flex-shrink-0 sticky top-0 z-20">
            <Link href="/" className="font-bold text-lg tracking-tight text-slate-900 flex items-center gap-2">
              <div className="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold shadow-md text-sm">
                C
              </div>
              Confección
            </Link>
-           <div className="flex items-center gap-1">
+           <div className="flex items-center gap-1.5">
+             <PwaInstallButton variant="mobile-header" />
              <Link
                href="/configuracion"
                aria-label="Configuración"
@@ -154,6 +157,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* Scrollable Main Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 pb-24 sm:pb-8">
           <div className="max-w-6xl mx-auto w-full">
+            <PwaInstallButton variant="banner" />
             {children}
           </div>
         </main>
