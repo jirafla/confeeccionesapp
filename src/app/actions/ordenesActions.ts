@@ -110,7 +110,9 @@ export async function avanzarAConfeccion(formData: FormData) {
 
   const id = formData.get("id") as string;
   const precioCorteStr = formData.get("precioCorte") as string;
-  const observacionesCorte = formData.get("observacionesCorte") as string;
+  const observacionesCorteInput = ((formData.get("observacionesCorte") as string) || "").trim();
+  const coloresCortados = ((formData.get("coloresCortados") as string) || "").trim();
+  const cantidadTotalCortadaStr = formData.get("cantidadTotalCortada") as string;
 
   const orden = await prisma.ordenProduccion.findUnique({
     where: { id, empresaId: empresa.id },
@@ -118,13 +120,34 @@ export async function avanzarAConfeccion(formData: FormData) {
 
   if (!orden) return { error: "Orden no encontrada." };
 
+  const nuevaCantidadTotal = cantidadTotalCortadaStr
+    ? parseInt(cantidadTotalCortadaStr)
+    : orden.cantidadTotal;
+
+  const nuevosColores = coloresCortados || orden.coloresDetalles;
+
+  // Si hubo ajuste en las cantidades cortadas respecto al pedido inicial, dejar trazabilidad en observaciones
+  let observacionesFinales = observacionesCorteInput;
+  const cambioCantidades =
+    (!isNaN(nuevaCantidadTotal) && nuevaCantidadTotal !== orden.cantidadTotal) ||
+    (coloresCortados && coloresCortados !== (orden.coloresDetalles || "").trim());
+
+  if (cambioCantidades) {
+    const notaTrazabilidad = `[Pedido inicial: ${orden.cantidadTotal} uds (${orden.coloresDetalles || "sin detalle"}) → Real cortado: ${nuevaCantidadTotal} uds]`;
+    observacionesFinales = observacionesFinales
+      ? `${observacionesFinales}\n${notaTrazabilidad}`
+      : notaTrazabilidad;
+  }
+
   await prisma.ordenProduccion.update({
     where: { id },
-    data: { 
+    data: {
       estado: "CONFECCION",
+      cantidadTotal: !isNaN(nuevaCantidadTotal) && nuevaCantidadTotal > 0 ? nuevaCantidadTotal : orden.cantidadTotal,
+      coloresDetalles: nuevosColores,
       precioCorte: precioCorteStr ? parseFloat(precioCorteStr) : null,
-      observacionesCorte: observacionesCorte || null
-    }
+      observacionesCorte: observacionesFinales || null,
+    },
   });
 
   revalidatePath(`/ordenes/${id}`);

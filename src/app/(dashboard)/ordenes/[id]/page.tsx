@@ -349,7 +349,12 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                 </div>
               )}
 
-              <AvanzarAConfeccionForm ordenId={orden.id} cantidadTotal={orden.cantidadTotal} mostrarPrecios={mostrarPrecios} />
+              <AvanzarAConfeccionForm
+                ordenId={orden.id}
+                cantidadTotal={orden.cantidadTotal}
+                variantes={variantes}
+                mostrarPrecios={mostrarPrecios}
+              />
             </div>
           )}
 
