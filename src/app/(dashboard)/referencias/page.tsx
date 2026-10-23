@@ -37,15 +37,18 @@ export default async function Referencias({
   return (
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Referencias</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight truncate">Referencias</h1>
           <p className="text-sm text-slate-500">{referencias.length} {referencias.length === 1 ? "referencia" : "referencias"}</p>
         </div>
         <Link
           href="/referencias/nuevo"
-          className="bg-blue-600 text-white px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center shrink-0 gap-2"
+          title="Nueva Referencia"
+          aria-label="Nueva Referencia"
+          className="bg-blue-600 text-white p-2.5 sm:px-5 sm:py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center shrink-0 gap-2"
         >
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nueva Referencia</span><span className="sm:hidden">Nueva</span>
+          <Plus className="w-5 h-5 sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline">Nueva Referencia</span>
         </Link>
       </div>
 

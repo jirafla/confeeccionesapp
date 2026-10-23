@@ -51,25 +51,29 @@ export default async function ResumenOrden({ params }: { params: Promise<{ id: s
   return (
     <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-20">
       {/* Header */}
-      <div>
-        <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4" /> Volver al panel
-        </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <PackageCheck className="w-8 h-8 text-emerald-500" />
-              Resumen de Producción
-            </h1>
-            <p className="text-sm text-slate-500 mt-1 flex items-center gap-2">
-              <span className="font-bold text-slate-700">{nombreOrden(orden)}</span>
-              <span className="text-slate-300">•</span>
-              {orden.cliente.nombre}
-            </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+          <Link
+            href="/"
+            title="Volver al panel"
+            aria-label="Volver al panel"
+            className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="hidden sm:inline text-sm font-medium">Volver</span>
+          </Link>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Resumen de Producción</p>
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight truncate" title={nombreOrden(orden)}>
+                {nombreOrden(orden)}
+              </h1>
+              <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-full ring-1 ring-emerald-200 shrink-0">
+                Completada
+              </span>
+            </div>
+            <p className="text-sm text-slate-500 mt-0.5 truncate">{orden.cliente.nombre} · {orden.cantidadTotal} prendas</p>
           </div>
-          <span className="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-sm rounded-full ring-1 ring-emerald-200">
-            Completada
-          </span>
         </div>
       </div>
 

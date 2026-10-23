@@ -164,8 +164,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <nav className="sm:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-slate-100 z-50 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        <div className="flex justify-around items-center h-16 px-2">
+      <nav className="sm:hidden fixed bottom-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-200/70 shadow-[0_-4px_20px_-10px_rgba(15,23,42,0.08)] z-50 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
+        <div className="flex justify-around items-center h-16 px-1.5">
           {links.filter(l => l.href !== "/configuracion").map((link) => {
             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
             const Icon = link.icon;
@@ -173,14 +173,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${
+                className={`relative flex flex-col items-center justify-center w-full h-full space-y-0.5 transition-all active:scale-95 ${
                   isActive ? "text-blue-600" : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                <div className={`p-1.5 rounded-xl transition-all ${isActive ? "bg-blue-50" : ""}`}>
+                {isActive && (
+                  <span className="absolute top-0 w-8 h-0.5 rounded-full bg-blue-600" />
+                )}
+                <div className={`px-3 py-1 rounded-xl transition-all ${isActive ? "bg-blue-50/90" : ""}`}>
                   <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5px]" : "stroke-2"}`} />
                 </div>
-                <span className={`text-[10px] ${isActive ? "font-bold" : "font-medium"}`}>{link.label}</span>
+                <span className={`text-[10px] tracking-tight ${isActive ? "font-bold text-blue-600" : "font-medium"}`}>{link.label}</span>
               </Link>
             );
           })}

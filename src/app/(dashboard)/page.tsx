@@ -126,23 +126,29 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Panel de Control</h1>
-          <p className="text-sm text-slate-500 mt-1">Resumen de producción, estado de talleres y entregas.</p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight truncate">Panel de Control</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">Resumen de producción, talleres y entregas.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link 
             href="/ordenes/nuevo" 
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+            title="Nueva Orden"
+            aria-label="Nueva Orden"
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white p-2.5 sm:px-4 sm:py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
           >
-            <Plus className="w-4 h-4" /> Nueva Orden
+            <Plus className="w-5 h-5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Nueva Orden</span>
           </Link>
           <Link 
             href="/talleres" 
-            className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
+            title="Ver Talleres"
+            aria-label="Ver Talleres"
+            className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 p-2.5 sm:px-4 sm:py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
           >
-            <Factory className="w-4 h-4 text-slate-400" /> Ver Talleres
+            <Factory className="w-5 h-5 sm:w-4 sm:h-4 text-slate-500" />
+            <span className="hidden sm:inline">Ver Talleres</span>
           </Link>
         </div>
       </div>

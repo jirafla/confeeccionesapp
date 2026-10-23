@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, Phone, MapPin, Search, Calendar, CheckCircle2, Factory } from "lucide-react";
 import TallerEditModal from "@/components/TallerEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import EmptyState from "@/components/EmptyState";
+import { nombreOrden } from "@/lib/ordenes";
 
 import { requireAuth } from "@/lib/auth";
 import { canViewCosts, canDelete } from "@/lib/permissions";
@@ -45,37 +47,51 @@ export default async function DetalleTaller({
 
   const query = q?.toLowerCase() || "";
   const asignacionesFiltradas = taller.asignaciones.filter(a => 
+    nombreOrden(a.orden).toLowerCase().includes(query) ||
     a.orden.referencia.codigo.toLowerCase().includes(query) || 
     a.orden.cliente.nombre.toLowerCase().includes(query) ||
     a.estadoLote.toLowerCase().includes(query)
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center space-x-4">
-        <Link href="/talleres" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Volver
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-start gap-2 sm:gap-3 min-w-0">
+        <Link
+          href="/talleres"
+          title="Volver a talleres"
+          aria-label="Volver a talleres"
+          className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="hidden sm:inline text-sm font-medium">Volver</span>
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-          Perfil del Taller
-        </h1>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Perfil del Taller</p>
+          <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight truncate" title={taller.nombre}>
+            {taller.nombre}
+          </h1>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Columna Izquierda - Información y Acciones */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">{taller.nombre}</h2>
+          <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200/80">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <Factory className="w-5 h-5" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 truncate" title={taller.nombre}>{taller.nombre}</h2>
+            </div>
             
             <div className="space-y-3 text-sm text-slate-600 mb-6">
               <p className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                {taller.telefono || "Sin teléfono registrado"}
+                <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                <span className="truncate">{taller.telefono || "Sin teléfono registrado"}</span>
               </p>
               <p className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                {taller.direccion || "Sin dirección registrada"}
+                <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                <span>{taller.direccion || "Sin dirección registrada"}</span>
               </p>
             </div>
 
@@ -107,23 +123,21 @@ export default async function DetalleTaller({
 
         {/* Columna Derecha - Lotes Asignados */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
-            <h2 className="text-xl font-bold text-slate-900">Asignaciones ({taller.asignaciones.length})</h2>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-2">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Asignaciones ({taller.asignaciones.length})</h2>
             <form method="GET" className="relative">
               <input 
-                type="text" 
+                type="search" 
                 name="q"
                 defaultValue={q}
-                placeholder="Buscar referencia o estado..." 
+                placeholder="Buscar orden, cliente o estado..." 
                 className="w-full sm:w-64 pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"
               />
-              <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </form>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3.5 sm:gap-4">
              {asignacionesFiltradas.length === 0 ? (
                 <div className="col-span-full">
                   <EmptyState 
@@ -132,56 +146,59 @@ export default async function DetalleTaller({
                   />
                 </div>
              ) : (
-                asignacionesFiltradas.map((asig) => (
-                  <Link key={asig.id} href={`/ordenes/${asig.ordenId}${asig.orden.estado === "ENTREGADO" ? "/resumen" : ""}`} className="block group">
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                              {asig.orden.referencia.codigo}
-                            </span>
-                            <span className="text-slate-300">•</span>
-                            <span className="text-sm font-medium text-slate-500">{asig.orden.cliente.nombre}</span>
+                asignacionesFiltradas.map((asig) => {
+                  const nombre = nombreOrden(asig.orden);
+                  return (
+                    <Link key={asig.id} href={`/ordenes/${asig.ordenId}${asig.orden.estado === "ENTREGADO" ? "/resumen" : ""}`} className="block group">
+                      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/80 hover:border-blue-300 hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start gap-2 mb-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1 min-w-0">
+                              <span className="text-sm sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors truncate" title={nombre}>
+                                {nombre}
+                              </span>
+                              <span className="text-slate-300 shrink-0">•</span>
+                              <span className="text-xs sm:text-sm font-medium text-slate-500 truncate">{asig.orden.cliente.nombre}</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+                              <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                Envío: {asig.fechaEnvio.toLocaleDateString("es-CO")}
+                              </p>
+                              <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                Pactada: {asig.fechaEntregaEsperada.toLocaleDateString("es-CO")}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 mt-2">
-                            <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                              <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                              Envío: {asig.fechaEnvio.toLocaleDateString()}
-                            </p>
-                            <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                              <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              Pactada: {asig.fechaEntregaEsperada.toLocaleDateString()}
-                            </p>
-                          </div>
+                          <span className={`px-2.5 py-1 text-[11px] font-bold uppercase rounded-full shrink-0
+                            ${asig.estadoLote === 'ENTREGADO' ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'}`}>
+                            {asig.estadoLote === 'ENTREGADO' ? 'Recibido' : 'En taller'}
+                          </span>
                         </div>
-                        <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded-lg shrink-0
-                          ${asig.estadoLote === 'ENTREGADO' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {asig.estadoLote}
-                        </span>
-                      </div>
 
-                      <div className="flex gap-6 mt-4 pt-4 border-t border-slate-50">
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Asignadas</p>
-                          <p className="font-semibold text-slate-800">{asig.cantidadAsignada}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Entregadas</p>
-                          <p className="font-semibold text-slate-800">
-                            {asig.estadoLote === 'ENTREGADO' ? asig.cantidadBuena : '--'}
-                          </p>
-                        </div>
-                        {mostrarPrecios && (
+                        <div className="flex flex-wrap gap-6 mt-3 pt-3 border-t border-slate-100">
                           <div>
-                            <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Total a Pagar</p>
-                            <p className="font-bold text-indigo-600">${(asig.cantidadAsignada * asig.precioUnitario).toLocaleString()}</p>
+                            <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Asignadas</p>
+                            <p className="font-bold text-slate-900 text-sm">{asig.cantidadAsignada} uds</p>
                           </div>
-                        )}
+                          <div>
+                            <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Entregadas</p>
+                            <p className="font-bold text-slate-900 text-sm">
+                              {asig.estadoLote === 'ENTREGADO' ? `${asig.cantidadBuena} uds` : '--'}
+                            </p>
+                          </div>
+                          {mostrarPrecios && (
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Total a Pagar</p>
+                              <p className="font-bold text-indigo-600 text-sm">${(asig.cantidadAsignada * asig.precioUnitario).toLocaleString("es-CO")}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))
+                    </Link>
+                  );
+                })
              )}
           </div>
         </div>
@@ -189,3 +206,4 @@ export default async function DetalleTaller({
     </div>
   );
 }
+

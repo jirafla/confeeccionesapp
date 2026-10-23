@@ -63,9 +63,12 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+          title="Editar referencia"
+          aria-label="Editar referencia"
+          className="inline-flex items-center justify-center gap-2 p-2.5 sm:px-4 sm:py-2.5 rounded-xl text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
         >
-          <Edit2 className="w-4 h-4" /> Editar
+          <Edit2 className="w-4 h-4" />
+          <span className="hidden sm:inline">Editar</span>
         </button>
       )}
 
