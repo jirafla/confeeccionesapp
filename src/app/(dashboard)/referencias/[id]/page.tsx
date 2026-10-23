@@ -230,9 +230,9 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
                           <span className="text-sm font-black text-slate-600">#{o.consecutivo}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-black text-slate-900 group-hover:text-blue-600">{nombreOrden(o)}</span>
-                            <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full ${estado.badge}`}>{estado.label}</span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-black text-slate-900 group-hover:text-blue-600 truncate">{nombreOrden(o)}</span>
+                            <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full shrink-0 ${estado.badge}`}>{estado.label}</span>
                           </div>
                           <p className="text-sm text-slate-500 truncate">
                             {o.cliente.nombre} · {o.createdAt.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" })}

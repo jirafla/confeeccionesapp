@@ -301,7 +301,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
                       <PackageCheck className="w-5 h-5 text-emerald-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-black text-slate-900">{nombreOrden(orden)}</p>
+                      <p className="font-black text-slate-900 truncate">{nombreOrden(orden)}</p>
                       <p className="text-xs text-slate-500 truncate">{orden.cliente.nombre} • {fmtFecha(fecha)}</p>
                     </div>
                     <div className="text-right shrink-0">

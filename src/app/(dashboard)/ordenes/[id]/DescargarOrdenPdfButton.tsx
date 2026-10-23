@@ -513,10 +513,12 @@ export default function DescargarOrdenPdfButton({
         type="button"
         onClick={handleDescargarPdf}
         disabled={generando}
-        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs disabled:opacity-50"
+        title="Descargar Ficha de Corte (PDF)"
+        aria-label="Descargar Ficha de Corte (PDF)"
+        className="inline-flex items-center justify-center gap-2 p-2 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-2xs disabled:opacity-50"
       >
         {generando ? <Loader2 className="w-4 h-4 animate-spin text-slate-900" /> : <FileDown className="w-4 h-4 text-slate-900" />}
-        <span>{generando ? "Generando PDF..." : "Descargar Ficha PDF"}</span>
+        <span className="hidden sm:inline">{generando ? "Generando PDF..." : "Descargar Ficha PDF"}</span>
       </button>
     );
   }

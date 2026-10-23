@@ -76,17 +76,27 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
   return (
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
       {/* HEADER */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 min-w-0">
-          <Link href="/ordenes" className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+          <Link
+            href="/ordenes"
+            title="Volver a órdenes"
+            aria-label="Volver a órdenes"
+            className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1"
+          >
             <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Volver</span>
+            <span className="hidden sm:inline text-sm font-medium">Volver</span>
           </Link>
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Orden de producción</p>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{nombre}</h1>
-              <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${estado.badge}`}>{estado.label}</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Orden de producción</p>
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <h1
+                className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight truncate"
+                title={nombre}
+              >
+                {nombre}
+              </h1>
+              <span className={`px-2.5 py-1 text-xs font-bold rounded-full shrink-0 ${estado.badge}`}>{estado.label}</span>
             </div>
             <p className="text-sm text-slate-500 mt-0.5 truncate">{orden.cliente.nombre} · {orden.cantidadTotal} prendas</p>
           </div>

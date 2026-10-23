@@ -58,15 +58,18 @@ export default async function Ordenes({
   return (
     <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Órdenes</h1>
           <p className="text-sm text-slate-500">{ordenes.length} {ordenes.length === 1 ? "orden" : "órdenes"}</p>
         </div>
         <Link
           href="/ordenes/nuevo"
-          className="bg-blue-600 text-white px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center shrink-0 gap-2"
+          title="Nueva Orden"
+          aria-label="Nueva Orden"
+          className="bg-blue-600 text-white p-2.5 sm:px-5 sm:py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center shrink-0 gap-2"
         >
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Nueva Orden</span><span className="sm:hidden">Nueva</span>
+          <Plus className="w-5 h-5 sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline">Nueva Orden</span>
         </Link>
       </div>
 
@@ -83,6 +86,7 @@ export default async function Ordenes({
           const buenas = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
           const pct = Math.round(((orden.estado === 'CORTE' ? 0 : buenas) / orden.cantidadTotal) * 100);
           const estado = estadoOrden(orden.estado);
+          const nombre = nombreOrden(orden);
 
           return (
             <Link key={orden.id} href={`/ordenes/${orden.id}`} className="block group">
@@ -92,18 +96,21 @@ export default async function Ordenes({
                     {orden.referencia.disenoArchivoUrl ? (
                       <ImageLightbox src={orden.referencia.disenoArchivoUrl} alt="" className="w-full h-full" />
                     ) : (
-                      <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                        <span className="text-xs text-slate-400 font-bold uppercase">{orden.referencia.codigo.slice(0, 4)}</span>
+                      <div className="w-full h-full bg-slate-100 flex items-center justify-center px-1">
+                        <span className="text-xs text-slate-400 font-bold uppercase truncate">{orden.referencia.codigo.slice(0, 4)}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <h2 className="text-base sm:text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors">
-                        {nombreOrden(orden)}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h2
+                        className="text-base sm:text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors truncate"
+                        title={nombre}
+                      >
+                        {nombre}
                       </h2>
-                      <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full ${estado.badge}`}>{estado.label}</span>
+                      <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full shrink-0 ${estado.badge}`}>{estado.label}</span>
                     </div>
                     <p className="text-sm text-slate-500 font-medium truncate">{orden.cliente.nombre}</p>
 
