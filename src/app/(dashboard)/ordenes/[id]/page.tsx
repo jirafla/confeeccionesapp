@@ -11,6 +11,7 @@ import EntregarClienteModal from "./EntregarClienteModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import MobileAccordion from "@/components/MobileAccordion";
 import CalculadoraCostos from "./CalculadoraCostos";
+import DescargarOrdenPdfButton from "./DescargarOrdenPdfButton";
 import {
   nombreOrden,
   estadoOrden,
@@ -91,8 +92,24 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {permiteEliminar && orden.asignaciones.length === 0 && (
-          <div className="shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <DescargarOrdenPdfButton
+            nombreOrden={nombre}
+            empresaNombre={empresa.nombre}
+            clienteNombre={orden.cliente.nombre}
+            referenciaCodigo={orden.referencia.codigo}
+            referenciaNombre={orden.referencia.nombrePrenda}
+            disenoArchivoUrl={orden.referencia.disenoArchivoUrl}
+            estadoLabel={estado.label}
+            fechaCreacion={fmtFecha(orden.createdAt)}
+            cantidadTotal={orden.cantidadTotal}
+            variantes={variantes}
+            telas={telas}
+            desgloseInsumos={desgloseInsumos}
+            observacionesCorte={orden.observacionesCorte}
+            variant="outline"
+          />
+          {permiteEliminar && orden.asignaciones.length === 0 && (
             <DeleteConfirmModal
               action={async () => {
                 "use server";
@@ -104,8 +121,8 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
               buttonText="Eliminar"
               iconOnly={true}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <OrdenTracking estadoActual={orden.estado} />
@@ -261,14 +278,32 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
         <div className="lg:col-span-2 space-y-5 sm:space-y-6">
           {orden.estado === 'CORTE' && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center shrink-0">
-                  <Scissors className="w-6 h-6 text-orange-500" />
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center shrink-0">
+                    <Scissors className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg sm:text-xl text-slate-900">Etapa de Corte</h3>
+                    <p className="text-sm text-slate-500">Prendas a cortar por variante. Cuando la tela esté cortada, envía la orden a confección.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg sm:text-xl text-slate-900">Etapa de Corte</h3>
-                  <p className="text-sm text-slate-500">Prendas a cortar por variante. Cuando la tela esté cortada, envía la orden a confección.</p>
-                </div>
+                <DescargarOrdenPdfButton
+                  nombreOrden={nombre}
+                  empresaNombre={empresa.nombre}
+                  clienteNombre={orden.cliente.nombre}
+                  referenciaCodigo={orden.referencia.codigo}
+                  referenciaNombre={orden.referencia.nombrePrenda}
+                  disenoArchivoUrl={orden.referencia.disenoArchivoUrl}
+                  estadoLabel={estado.label}
+                  fechaCreacion={fmtFecha(orden.createdAt)}
+                  cantidadTotal={orden.cantidadTotal}
+                  variantes={variantes}
+                  telas={telas}
+                  desgloseInsumos={desgloseInsumos}
+                  observacionesCorte={orden.observacionesCorte}
+                  variant="primary"
+                />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">

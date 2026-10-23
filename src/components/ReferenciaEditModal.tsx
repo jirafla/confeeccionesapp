@@ -36,6 +36,7 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
     initialInsumosParsed.map((i) => ({
       nombre: i.nombre,
       tipo: i.tipo,
+      unidadMedida: i.unidadMedida === "m" ? "m" : "cm",
       cantidad: i.cantidad,
       porColor: i.porColor !== false,
     }))
@@ -101,6 +102,7 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
                   .map((i) => ({
                     nombre: i.nombre.trim(),
                     tipo: i.tipo,
+                    unidadMedida: i.unidadMedida === "m" ? "m" : "cm",
                     cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0,
                     porColor: i.porColor !== false,
                   }));

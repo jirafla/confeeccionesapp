@@ -4,9 +4,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { guardarCostosMateriales } from "@/app/actions/ordenesActions";
 import { Calculator, Save } from "lucide-react";
+import { getInsumoUnidadLabel } from "@/lib/ordenes";
 
 type Tela = { nombre: string; tipo: string; promedio: number };
-type Insumo = { nombre: string; tipo: string; cantidad: number };
+type Insumo = { nombre: string; tipo: string; unidadMedida?: "cm" | "m"; cantidad: number };
 
 export default function CalculadoraCostos({
   ordenId,
@@ -134,19 +135,20 @@ export default function CalculadoraCostos({
                 {insumos.map(i => {
                   const val = preciosInsumos[i.nombre] || 0;
                   const unitCosto = val * i.cantidad;
+                  const unidadLabel = getInsumoUnidadLabel(i);
                   return (
                     <div key={i.nombre} className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-sm font-semibold text-slate-900">{i.nombre}</p>
-                          <p className="text-[11px] font-bold text-slate-400 uppercase">{i.cantidad} {i.tipo === 'UNIDAD' ? 'uds' : 'medida'} / ud</p>
+                          <p className="text-[11px] font-bold text-slate-400 uppercase">{i.cantidad} {unidadLabel} / ud</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-slate-500 font-semibold">$</span>
                           <input 
                             type="number" 
                             min="0"
-                            placeholder="Precio ud"
+                            placeholder={`Precio ${unidadLabel}`}
                             value={val || ""}
                             onChange={e => setPreciosInsumos({...preciosInsumos, [i.nombre]: Number(e.target.value)})}
                             className={inputCls}

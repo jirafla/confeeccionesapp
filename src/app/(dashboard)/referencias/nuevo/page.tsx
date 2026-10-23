@@ -45,6 +45,7 @@ export default function NuevaReferencia() {
             .map((i) => ({
               nombre: i.nombre.trim(),
               tipo: i.tipo,
+              unidadMedida: i.unidadMedida === "m" ? "m" : "cm",
               cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0,
               porColor: i.porColor !== false,
             }));

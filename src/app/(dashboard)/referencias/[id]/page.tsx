@@ -16,7 +16,7 @@ import {
 import ImageLightbox from "@/components/ImageLightbox";
 import ReferenciaEditModal from "@/components/ReferenciaEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
-import { nombreOrden, estadoOrden, downloadUrl, parseTelas, parseInsumos } from "@/lib/ordenes";
+import { nombreOrden, estadoOrden, downloadUrl, parseTelas, parseInsumos, getInsumoUnidadLabel } from "@/lib/ordenes";
 import { canDelete } from "@/lib/permissions";
 
 export default async function ReferenciaDetalle({ params }: { params: Promise<{ id: string }> }) {
@@ -147,32 +147,35 @@ export default async function ReferenciaDetalle({ params }: { params: Promise<{ 
                 <span className="text-xs text-slate-400 font-medium">{insumos.length} {insumos.length === 1 ? 'insumo' : 'insumos'}</span>
               </div>
               <div className="space-y-2">
-                {insumos.map((insumo, idx) => (
-                  <div 
-                    key={idx}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-sm"
-                  >
-                    <div className="min-w-0 pr-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold uppercase text-slate-400">
-                          {insumo.tipo === 'UNIDAD' ? 'Por unidad' : 'Por medida'}
-                        </span>
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          insumo.porColor !== false
-                            ? 'bg-indigo-50 text-indigo-600'
-                            : 'bg-slate-200/70 text-slate-600'
-                        }`}>
-                          {insumo.porColor !== false ? 'Al tono' : 'Estándar'}
-                        </span>
+                {insumos.map((insumo, idx) => {
+                  const unidadLabel = getInsumoUnidadLabel(insumo);
+                  return (
+                    <div 
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-sm"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-bold uppercase text-slate-400">
+                            {insumo.tipo === 'UNIDAD' ? 'Por unidad' : `Por medida (${unidadLabel})`}
+                          </span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            insumo.porColor !== false
+                              ? 'bg-indigo-50 text-indigo-600'
+                              : 'bg-slate-200/70 text-slate-600'
+                          }`}>
+                            {insumo.porColor !== false ? 'Al tono' : 'Estándar'}
+                          </span>
+                        </div>
+                        <p className="font-semibold text-slate-800 truncate">{insumo.nombre}</p>
                       </div>
-                      <p className="font-semibold text-slate-800 truncate">{insumo.nombre}</p>
+                      <div className="text-right shrink-0">
+                        <span className="font-black text-blue-600 text-base">{insumo.cantidad}</span>
+                        <span className="text-xs text-slate-400 font-medium ml-1">{unidadLabel}</span>
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <span className="font-black text-blue-600 text-base">{insumo.cantidad}</span>
-                      <span className="text-xs text-slate-400 font-medium ml-1">{insumo.tipo === 'UNIDAD' ? 'uds' : 'm/cm'}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

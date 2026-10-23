@@ -5,6 +5,7 @@ import { Plus, Trash2, Palette } from "lucide-react";
 export type InsumoInputItem = {
   nombre: string;
   tipo: string; // "UNIDAD" | "MEDIDA"
+  unidadMedida?: "cm" | "m"; // Por defecto "cm"
   cantidad: string | number;
   porColor?: boolean; // true = "Al tono (Por color)", false = "Color único / Estándar"
 };
@@ -18,12 +19,16 @@ export default function InsumosInputList({
 }) {
   const handleUpdate = (index: number, field: keyof InsumoInputItem, value: string | boolean) => {
     const updated = [...insumos];
-    updated[index] = { ...updated[index], [field]: value };
+    const nextItem = { ...updated[index], [field]: value };
+    if (field === "tipo" && value === "MEDIDA" && !nextItem.unidadMedida) {
+      nextItem.unidadMedida = "cm";
+    }
+    updated[index] = nextItem;
     onChange(updated);
   };
 
   const handleAdd = () => {
-    onChange([...insumos, { nombre: "", tipo: "UNIDAD", cantidad: "", porColor: true }]);
+    onChange([...insumos, { nombre: "", tipo: "UNIDAD", unidadMedida: "cm", cantidad: "", porColor: true }]);
   };
 
   const handleRemove = (index: number) => {
@@ -58,6 +63,7 @@ export default function InsumosInputList({
         )}
         {insumos.map((insumo, idx) => {
           const esPorColor = insumo.porColor !== false;
+          const unidadMedidaActual = insumo.unidadMedida === "m" ? "m" : "cm";
           return (
             <div
               key={idx}
@@ -85,8 +91,8 @@ export default function InsumosInputList({
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-36 shrink-0">
-                  <div className="relative flex-1">
+                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                  <div className="relative flex-1 sm:w-20">
                     <input
                       type="number"
                       step="0.01"
@@ -97,9 +103,21 @@ export default function InsumosInputList({
                       className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 text-center outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
                     />
                   </div>
-                  <span className="text-xs text-slate-400 font-semibold w-8 text-center">
-                    {insumo.tipo === "UNIDAD" ? "uds" : "m/cm"}
-                  </span>
+                  {insumo.tipo === "UNIDAD" ? (
+                    <span className="text-xs text-slate-400 font-semibold w-10 text-center">
+                      uds
+                    </span>
+                  ) : (
+                    <select
+                      value={unidadMedidaActual}
+                      onChange={(e) => handleUpdate(idx, "unidadMedida", e.target.value)}
+                      title="Unidad de medida (Centímetros por defecto o Metros)"
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-bold text-blue-700 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                    >
+                      <option value="cm">cm (Centímetros)</option>
+                      <option value="m">m (Metros)</option>
+                    </select>
+                  )}
 
                   <button
                     type="button"

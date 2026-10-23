@@ -61,9 +61,16 @@ export function parseTelas(telasDetalles: string | null | undefined): TelaItem[]
 export type InsumoItem = {
   nombre: string;
   tipo: string; // "UNIDAD" | "MEDIDA"
+  unidadMedida?: "cm" | "m"; // Por defecto "cm" cuando tipo === "MEDIDA"
   cantidad: number;
   porColor?: boolean; // true por defecto ("Al tono de la prenda"), false si es "Estándar / Color único"
 };
+
+/** Devuelve la etiqueta de unidad de un insumo ("uds", "cm" o "m") */
+export function getInsumoUnidadLabel(insumo: { tipo: string; unidadMedida?: string }): string {
+  if (insumo.tipo === "UNIDAD") return "uds";
+  return insumo.unidadMedida === "m" ? "m" : "cm";
+}
 
 /** Parsea el string JSON de insumos de una referencia */
 export function parseInsumos(insumosDetalles: string | null | undefined): InsumoItem[] {
@@ -76,6 +83,7 @@ export function parseInsumos(insumosDetalles: string | null | undefined): Insumo
         .map((i) => ({
           nombre: String(i.nombre || "Insumo"),
           tipo: String(i.tipo || "UNIDAD"),
+          unidadMedida: i.unidadMedida === "m" ? "m" : "cm",
           cantidad: typeof i.cantidad === "number" ? i.cantidad : parseFloat(i.cantidad) || 0,
           porColor: i.porColor !== undefined ? Boolean(i.porColor) : true,
         }));
@@ -140,7 +148,7 @@ export function calcularDesgloseInsumos(
   const variantesValidas = variantes.filter((v) => v.detalle.trim() && (v.cantidad ?? 0) > 0);
 
   return insumos.map((insumo, insumoIdx) => {
-    const unidadLabel = insumo.tipo === "UNIDAD" ? "uds" : "m/cm";
+    const unidadLabel = getInsumoUnidadLabel(insumo);
     const esPorColor = insumo.porColor !== false;
     const totalCantidad = Number((cantidadTotalOrden * insumo.cantidad).toFixed(2));
 
