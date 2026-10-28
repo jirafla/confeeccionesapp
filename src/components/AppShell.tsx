@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { logout } from "@/app/login/actions";
 import PwaInstallButton from "./PwaInstallButton";
+import NotificationCenter from "./NotificationCenter";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -102,7 +103,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         
-        <div className={`${isCollapsed ? "p-3" : "p-6"} border-t border-slate-50`}>
+        <div className={`${isCollapsed ? "p-3" : "p-6"} border-t border-slate-50 space-y-2.5`}>
+          <NotificationCenter variant="sidebar" collapsed={isCollapsed} />
           <PwaInstallButton variant="sidebar" collapsed={isCollapsed} />
           <form action={logout}>
             <button 
@@ -136,6 +138,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
              Confección
            </Link>
            <div className="flex items-center gap-1.5">
+             <NotificationCenter variant="mobile-header" />
              <PwaInstallButton variant="mobile-header" />
              <Link
                href="/configuracion"

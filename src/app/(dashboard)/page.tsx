@@ -16,6 +16,7 @@ import DashboardCharts from "@/components/DashboardCharts";
 import BuscadorHistorial from "@/components/BuscadorHistorial";
 import PaginacionHistorial from "@/components/PaginacionHistorial";
 import FiltroPeriodoDashboard from "@/components/FiltroPeriodoDashboard";
+import LotesPorEntregarPanel, { LotePendienteDashboard } from "@/components/LotesPorEntregarPanel";
 import { requireAuth } from "@/lib/auth";
 import { nombreOrden } from "@/lib/ordenes";
 import { Prisma } from "@prisma/client";
@@ -91,6 +92,29 @@ export default async function Home(props: {
   // Trabajo activo (en curso)
   const ordenesCorteList = ordenes.filter(o => o.estado === "CORTE");
   const ordenesConfeccionList = ordenes.filter(o => o.estado === "CONFECCION");
+
+  // Lotes activos por entregar ordenados por fecha pactada más próxima / vencida
+  const lotesPendientesDashboard: LotePendienteDashboard[] = ordenes
+    .filter(o => o.estado !== "ENTREGADO")
+    .flatMap(o =>
+      o.asignaciones
+        .filter(a => a.estadoLote === "ASIGNADO")
+        .map(a => ({
+          id: a.id,
+          ordenId: o.id,
+          ordenNombre: nombreOrden(o),
+          prendaNombre: o.referencia.nombrePrenda || null,
+          clienteNombre: o.cliente.nombre,
+          tallerId: a.tallerId,
+          tallerNombre: a.taller.nombre,
+          tallerTelefono: a.taller.telefono || null,
+          cantidadAsignada: a.cantidadAsignada,
+          fechaEnvio: a.fechaEnvio.toISOString(),
+          fechaEntregaEsperada: a.fechaEntregaEsperada.toISOString(),
+          esReproceso: Boolean(a.esReproceso),
+        }))
+    )
+    .sort((a, b) => new Date(a.fechaEntregaEsperada).getTime() - new Date(b.fechaEntregaEsperada).getTime());
 
   // Órdenes entregadas en el Mes y Año seleccionados
   const ordenesEntregadasMes = ordenes.filter(o => {
@@ -359,6 +383,9 @@ export default async function Home(props: {
           </Link>
         </div>
       </div>
+
+      {/* SECCIÓN 2.5: LISTADO DE LOTES POR ENTREGAR POR TALLER */}
+      <LotesPorEntregarPanel lotes={lotesPendientesDashboard} />
 
       {/* SECCIÓN 3: GRÁFICOS */}
       <DashboardCharts lotesPorEstado={ordenesPorEstado} datosProduccion={datosProduccion} />
