@@ -4,6 +4,7 @@ import { useState } from "react";
 import { marcarOrdenEntregada } from "@/app/actions/ordenesActions";
 import { toast } from "sonner";
 import { PackageCheck, X, AlertTriangle } from "lucide-react";
+import ModalPortal from "@/components/ModalPortal";
 
 export default function EntregarClienteModal({
   ordenId,
@@ -38,15 +39,16 @@ export default function EntregarClienteModal({
       </button>
 
       {isOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setIsOpen(false)}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-md overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setIsOpen(false)}
           >
-            <div className="flex justify-between items-center p-5 border-b border-slate-100">
+            <div
+              className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-md overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-5 border-b border-slate-100">
               <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
                 <PackageCheck className="w-5 h-5 text-emerald-600" /> Entregar orden {nombre}
               </h3>
@@ -111,13 +113,14 @@ export default function EntregarClienteModal({
                     setIsOpen(false);
                   }
                 }}
-                className="bg-emerald-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="bg-emerald-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isPending ? "Guardando..." : "Confirmar entrega"}
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       )}
     </>
   );

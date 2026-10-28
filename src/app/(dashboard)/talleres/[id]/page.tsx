@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Phone, MapPin, Search, Calendar, CheckCircle2, Factory, Star } from "lucide-react";
+import { ArrowLeft, Phone, MapPin, Search, Calendar, Factory, Star, MessageCircle } from "lucide-react";
 import TallerEditModal from "@/components/TallerEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import EmptyState from "@/components/EmptyState";
 import { nombreOrden } from "@/lib/ordenes";
-import { getCapacidadInfo } from "@/lib/talleres";
+import { getCapacidadInfo, getEstadoFechaLote, getContactoLinks } from "@/lib/talleres";
 
 import { requireAuth } from "@/lib/auth";
 import { canViewCosts, canDelete } from "@/lib/permissions";
@@ -48,6 +48,7 @@ export default async function DetalleTaller({
 
   const cap = getCapacidadInfo(taller.capacidad);
   const CapIcon = cap?.icon;
+  const contacto = getContactoLinks(taller.telefono);
 
   const query = q?.toLowerCase() || "";
   const asignacionesFiltradas = taller.asignaciones.filter(a => 
@@ -104,7 +105,7 @@ export default async function DetalleTaller({
               </div>
             </div>
             
-            <div className="space-y-3 text-sm text-slate-600 mb-6">
+            <div className="space-y-3 text-sm text-slate-600 mb-5">
               <p className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-slate-400 shrink-0" />
                 <span className="truncate">{taller.telefono || "Sin teléfono registrado"}</span>
@@ -115,7 +116,28 @@ export default async function DetalleTaller({
               </p>
             </div>
 
-            <div className="space-y-3 mt-6">
+            {contacto && (
+              <div className="grid grid-cols-2 gap-2.5 mb-5">
+                <a
+                  href={contacto.whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/80 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </a>
+                <a
+                  href={contacto.telHref}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  Llamar
+                </a>
+              </div>
+            )}
+
+            <div className="space-y-3 mt-4">
               <TallerEditModal taller={taller} />
               
               {permiteEliminar && taller.asignaciones.length === 0 && (
@@ -168,6 +190,7 @@ export default async function DetalleTaller({
              ) : (
                 asignacionesFiltradas.map((asig) => {
                   const nombre = nombreOrden(asig.orden);
+                  const estadoFecha = getEstadoFechaLote(asig.fechaEntregaEsperada, asig.estadoLote);
                   return (
                     <Link key={asig.id} href={`/ordenes/${asig.ordenId}${asig.orden.estado === "ENTREGADO" ? "/resumen" : ""}`} className="block group">
                       <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/80 hover:border-blue-300 hover:shadow-md transition-all">
@@ -180,15 +203,15 @@ export default async function DetalleTaller({
                               <span className="text-slate-300 shrink-0">•</span>
                               <span className="text-xs sm:text-sm font-medium text-slate-500 truncate">{asig.orden.cliente.nombre}</span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-1.5">
                               <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                Envío: {asig.fechaEnvio.toLocaleDateString("es-CO")}
+                                <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                Envío: {asig.fechaEnvio.toLocaleDateString("es-CO", { day: "2-digit", month: "short" })}
                               </p>
-                              <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                Pactada: {asig.fechaEntregaEsperada.toLocaleDateString("es-CO")}
-                              </p>
+                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold border ${estadoFecha.badgeClass}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${estadoFecha.dotClass}`} />
+                                {estadoFecha.label}
+                              </span>
                             </div>
                           </div>
                           <span className={`px-2.5 py-1 text-[11px] font-bold uppercase rounded-full shrink-0

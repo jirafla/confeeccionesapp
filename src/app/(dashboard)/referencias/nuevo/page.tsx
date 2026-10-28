@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ImageIcon, FileText, Upload } from "lucide-react";
 import { createReferencia } from "@/app/actions/referenciaActions";
 import { toast } from "sonner";
 import TelasInputList, { TelaInputItem } from "@/components/TelasInputList";
@@ -10,18 +10,26 @@ import InsumosInputList, { InsumoInputItem } from "@/components/InsumosInputList
 
 export default function NuevaReferencia() {
   const [isPending, setIsPending] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [optitexName, setOptitexName] = useState<string | null>(null);
   const [telas, setTelas] = useState<TelaInputItem[]>([
     { nombre: "Tela 1", tipo: "", promedio: "" }
   ]);
   const [insumos, setInsumos] = useState<InsumoInputItem[]>([]);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center space-x-4">
-        <Link href="/referencias" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors">
-          <ArrowLeft className="w-6 h-6" /> Volver
+    <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6 animate-in fade-in duration-500">
+      <div className="flex items-start gap-2.5 sm:gap-3">
+        <Link
+          href="/referencias"
+          title="Volver a referencias"
+          aria-label="Volver a referencias"
+          className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="hidden sm:inline text-sm font-medium">Volver</span>
         </Link>
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Nueva Referencia</h1>
           <p className="text-sm text-slate-500">Registra el código, nombre de prenda, telas requeridas y archivos técnicos.</p>
         </div>
@@ -98,45 +106,87 @@ export default function NuevaReferencia() {
           <InsumosInputList insumos={insumos} onChange={setInsumos} />
         </div>
 
-        {/* ARCHIVOS ADJUNTOS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+        {/* ARCHIVOS ADJUNTOS CON VISTA PREVIA */}
+        <div className="space-y-4 pt-4 border-t border-slate-100">
           <div>
-            <label htmlFor="disenoArchivo" className="block text-sm font-semibold text-slate-700 mb-2">
-              Diseño a Mano / Foto (Imagen)
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Diseño / Foto de la Prenda
             </label>
-            <input 
-              type="file" 
-              name="disenoArchivo" 
-              id="disenoArchivo" 
-              accept="image/*"
-              className="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors"
-            />
+            <label className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50/70 hover:bg-blue-50/30 transition-colors cursor-pointer overflow-hidden">
+              {preview ? (
+                <div className="w-full h-44 relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={preview} alt="Vista previa" className="w-full h-full object-contain bg-slate-100" />
+                  <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold">
+                    <Upload className="w-4 h-4" /> Cambiar imagen
+                  </div>
+                </div>
+              ) : (
+                <div className="py-7 px-4 text-center">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2">
+                    <ImageIcon className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700">Subir foto o diseño de la referencia</p>
+                  <p className="text-xs text-slate-400 mt-0.5">JPG, PNG o WEBP (toca para seleccionar)</p>
+                </div>
+              )}
+              <input
+                type="file"
+                name="disenoArchivo"
+                id="disenoArchivo"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) setPreview(URL.createObjectURL(f));
+                }}
+              />
+            </label>
           </div>
 
           <div>
-            <label htmlFor="optitexArchivo" className="block text-sm font-semibold text-slate-700 mb-2">
-              Archivo Optitex (PDF/ZIP/DXF)
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Archivo Optitex (PDF / ZIP / DXF)
             </label>
-            <input 
-              type="file" 
-              name="optitexArchivo" 
-              id="optitexArchivo" 
-              className="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-colors"
-            />
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 hover:border-blue-400 bg-slate-50 hover:bg-blue-50/30 px-4 py-3 cursor-pointer transition-colors">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-800 truncate">
+                    {optitexName ?? "Sin archivo Optitex seleccionado"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {optitexName ? "Listo para subir" : "PDF, ZIP, DXF o PDS"}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-semibold text-blue-600 shrink-0">
+                {optitexName ? "Cambiar" : "Elegir archivo"}
+              </span>
+              <input
+                type="file"
+                name="optitexArchivo"
+                id="optitexArchivo"
+                className="sr-only"
+                onChange={(e) => setOptitexName(e.target.files?.[0]?.name ?? null)}
+              />
+            </label>
           </div>
         </div>
 
-        <div className="pt-6 mt-6 border-t border-slate-100 flex justify-end gap-3">
+        <div className="pt-6 mt-6 border-t border-slate-100 flex flex-col-reverse sm:flex-row justify-end gap-2.5">
           <Link 
             href="/referencias"
-            className="px-5 py-2.5 rounded-xl font-medium text-sm text-slate-700 hover:bg-slate-100 transition-colors"
+            className="w-full sm:w-auto text-center px-5 py-2.5 rounded-xl font-semibold text-sm text-slate-700 hover:bg-slate-100 transition-colors"
           >
             Cancelar
           </Link>
           <button 
             type="submit" 
             disabled={isPending}
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50"
+            className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50 cursor-pointer"
           >
             {isPending ? "Guardando..." : "Guardar Referencia"}
           </button>

@@ -23,6 +23,7 @@ import {
   formatearResumenInsumos,
 } from "@/lib/ordenes";
 import { canViewCosts, canDelete } from "@/lib/permissions";
+import { getEstadoFechaLote } from "@/lib/talleres";
 
 const fmtFecha = (d: Date) => d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 const fmtDinero = (n: number) => `$${n.toLocaleString("es-CO")}`;
@@ -461,11 +462,12 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                 <div className="divide-y divide-slate-100">
                   {orden.asignaciones.map((asig) => {
                     const recibido = asig.estadoLote === 'ENTREGADO';
+                    const estadoFecha = getEstadoFechaLote(asig.fechaEntregaEsperada, asig.estadoLote);
                     return (
                       <div key={asig.id} className="p-4 sm:p-5">
                         <div className="flex justify-between items-start gap-3 mb-3">
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <Link href={`/talleres/${asig.tallerId}`} className="font-bold text-slate-900 text-base sm:text-lg hover:text-blue-600 truncate block">
                                 {asig.taller.nombre}
                               </Link>
@@ -475,10 +477,13 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs sm:text-sm text-slate-500 font-medium flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
-                              <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Envío {fmtFecha(asig.fechaEnvio)}</span>
-                              <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-amber-500" /> Pactada {fmtFecha(asig.fechaEntregaEsperada)}</span>
-                            </p>
+                            <div className="text-xs sm:text-sm text-slate-500 font-medium flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mt-1">
+                              <span className="inline-flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-slate-400" /> Envío {fmtFecha(asig.fechaEnvio)}</span>
+                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold border ${estadoFecha.badgeClass}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${estadoFecha.dotClass}`} />
+                                {estadoFecha.label}
+                              </span>
+                            </div>
                           </div>
                           <span className={`px-2.5 py-1 text-xs font-bold rounded-full shrink-0 ${recibido ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'}`}>
                             {recibido ? 'Recibido' : 'En taller'}

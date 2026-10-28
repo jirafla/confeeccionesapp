@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { X, Edit2, ImageIcon, FileText, Upload } from "lucide-react";
 import TelasInputList, { TelaInputItem } from "./TelasInputList";
 import InsumosInputList, { InsumoInputItem } from "./InsumosInputList";
+import ModalPortal from "./ModalPortal";
 import { parseTelas, parseInsumos } from "@/lib/ordenes";
 
 type Ref = { 
@@ -73,20 +74,21 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
       )}
 
       {isOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={cerrar}
-        >
+        <ModalPortal>
           <div
-            className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-xl max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={cerrar}
           >
-            <div className="sticky top-0 bg-white flex justify-between items-center p-5 border-b border-slate-100 z-10">
-              <h3 className="font-bold text-lg text-slate-900">Editar referencia</h3>
-              <button onClick={cerrar} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <div
+              className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-xl max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-white flex justify-between items-center p-5 border-b border-slate-100 z-10">
+                <h3 className="font-bold text-lg text-slate-900">Editar referencia</h3>
+                <button onClick={cerrar} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
             <form
               action={async (formData) => {
@@ -227,14 +229,15 @@ export default function ReferenciaEditModal({ referencia, variant = "icon" }: { 
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="bg-blue-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="bg-blue-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? "Guardando..." : "Guardar cambios"}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       )}
     </>
   );

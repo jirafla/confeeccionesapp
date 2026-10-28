@@ -66,12 +66,21 @@ export default function NuevaOrden({
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center space-x-4">
-        <Link href="/ordenes" className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors">
-          <ArrowLeft className="w-6 h-6" /> Volver
+    <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6 animate-in fade-in duration-500">
+      <div className="flex items-start gap-2.5 sm:gap-3">
+        <Link
+          href="/ordenes"
+          title="Volver a órdenes"
+          aria-label="Volver a órdenes"
+          className="mt-1 p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0 inline-flex items-center gap-1"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="hidden sm:inline text-sm font-medium">Volver</span>
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Crear Orden</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Crear Orden</h1>
+          <p className="text-sm text-slate-500">Configura el cliente, la referencia, los colores del pedido y el corte.</p>
+        </div>
       </div>
       
       <form action={async (formData) => {

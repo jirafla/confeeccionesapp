@@ -5,6 +5,7 @@ import { createAsignacion } from "@/app/actions/asignacionActions";
 import { toast } from "sonner";
 import { Factory, X, Plus, Sparkles, Trash2, RotateCcw } from "lucide-react";
 import { InsumoItem, getInsumoUnidadLabel } from "@/lib/ordenes";
+import ModalPortal from "@/components/ModalPortal";
 
 type FilaInsumoLote = {
   id: string;
@@ -103,9 +104,16 @@ export default function AsignarTallerModal({
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left">
-            <div className="sticky top-0 z-10 bg-white flex justify-between items-center p-4 sm:px-6 border-b border-slate-100">
+        <ModalPortal>
+          <div
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setIsOpen(false)}
+          >
+            <div
+              className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 z-10 bg-white flex justify-between items-center p-4 sm:px-6 border-b border-slate-100">
               <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
                 <Factory className="w-5 h-5 text-blue-500" />
                 Nueva Asignación a Taller
@@ -398,7 +406,8 @@ export default function AsignarTallerModal({
               </div>
             </form>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       )}
     </>
   );

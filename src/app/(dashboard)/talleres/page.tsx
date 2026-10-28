@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, Phone, MapPin, Factory, ChevronRight, Star } from "lucide-react";
+import { Plus, Phone, MapPin, Factory, ChevronRight, Star, MessageCircle } from "lucide-react";
 
 import SearchInput from "@/components/SearchInput";
 import EmptyState from "@/components/EmptyState";
 import TalleresSortSelect from "./TalleresSortSelect";
-import { getCapacidadInfo } from "@/lib/talleres";
+import { getCapacidadInfo, getContactoLinks } from "@/lib/talleres";
 
 import { requireAuth } from "@/lib/auth";
 
@@ -73,15 +73,17 @@ export default async function Talleres({
         {talleres.map((taller) => {
           const cap = getCapacidadInfo(taller.capacidad);
           const CapIcon = cap?.icon;
+          const contacto = getContactoLinks(taller.telefono);
           return (
-            <Link href={`/talleres/${taller.id}`} key={taller.id} className="group">
-              <div
-                className={`bg-white p-4 sm:p-5 rounded-2xl shadow-sm border transition-all flex flex-col h-full ${
-                  taller.destacado
-                    ? "border-amber-300/90 bg-gradient-to-br from-white via-white to-amber-50/30 hover:border-amber-400 hover:shadow-md"
-                    : "border-slate-200/70 hover:shadow-md hover:border-blue-300"
-                }`}
-              >
+            <div
+              key={taller.id}
+              className={`bg-white p-4 sm:p-5 rounded-2xl shadow-sm border transition-all flex flex-col h-full group ${
+                taller.destacado
+                  ? "border-amber-300/90 bg-gradient-to-br from-white via-white to-amber-50/30 hover:border-amber-400 hover:shadow-md"
+                  : "border-slate-200/70 hover:shadow-md hover:border-blue-300"
+              }`}
+            >
+              <Link href={`/talleres/${taller.id}`} className="flex-1 flex flex-col">
                 <div className="flex justify-between items-start gap-2 mb-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
@@ -145,8 +147,31 @@ export default async function Talleres({
                     <span className="line-clamp-1">{taller.direccion || "Sin dirección"}</span>
                   </p>
                 </div>
-              </div>
-            </Link>
+              </Link>
+
+              {contacto && (
+                <div className="flex items-center gap-1.5 pt-2.5 mt-2.5 border-t border-slate-100">
+                  <a
+                    href={contacto.whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Escribir por WhatsApp"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href={contacto.telHref}
+                    title="Llamar"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Llamar</span>
+                  </a>
+                </div>
+              )}
+            </div>
           );
         })}
         

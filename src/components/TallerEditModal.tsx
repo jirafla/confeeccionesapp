@@ -3,79 +3,92 @@
 import { useState } from "react";
 import { updateTallerAction } from "@/app/actions/tallerActions";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 import TallerAtributosFields from "./TallerAtributosFields";
+import ModalPortal from "./ModalPortal";
 
 export default function TallerEditModal({ taller }: { taller: any }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!isOpen) {
-    return (
+  return (
+    <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="w-full bg-slate-900 text-white px-4 py-2.5 rounded-xl font-medium hover:bg-slate-800 transition-all shadow-sm cursor-pointer"
+        className="w-full bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm cursor-pointer"
       >
         Editar Información
       </button>
-    );
-  }
 
-  return (
-    <>
-      <div 
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
-        onClick={() => setIsOpen(false)}
-      />
-      <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-50 bg-white sm:rounded-2xl rounded-t-2xl shadow-xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
-        <form 
-          action={async (formData) => {
-            try {
-              await updateTallerAction(taller.id, formData);
-              toast.success("Taller actualizado exitosamente");
-              setIsOpen(false);
-            } catch {
-              toast.error("Error al actualizar el taller");
-            }
-          }} 
-          className="p-6 space-y-4"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-slate-900">Editar Taller</h2>
-            <button 
-              type="button" 
-              onClick={() => setIsOpen(false)}
-              className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full cursor-pointer"
+      {isOpen && (
+        <ModalPortal>
+          <div
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setIsOpen(false)}
+          >
+            <div
+              className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left"
+              onClick={(e) => e.stopPropagation()}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          </div>
-          
-          <div>
-            <label htmlFor="nombre" className="block text-sm font-semibold text-slate-700 mb-1">Nombre</label>
-            <input type="text" name="nombre" id="nombre" defaultValue={taller.nombre} required className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500" />
-          </div>
+              <div className="sticky top-0 z-10 bg-white flex justify-between items-center p-5 border-b border-slate-100">
+                <h2 className="text-lg font-bold text-slate-900">Editar Taller</h2>
+                <button 
+                  type="button" 
+                  onClick={() => setIsOpen(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-          <div>
-            <label htmlFor="telefono" className="block text-sm font-semibold text-slate-700 mb-1">Teléfono</label>
-            <input type="text" name="telefono" id="telefono" defaultValue={taller.telefono || ""} className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500" />
-          </div>
+              <form 
+                action={async (formData) => {
+                  try {
+                    await updateTallerAction(taller.id, formData);
+                    toast.success("Taller actualizado exitosamente");
+                    setIsOpen(false);
+                  } catch {
+                    toast.error("Error al actualizar el taller");
+                  }
+                }} 
+                className="p-5 sm:p-6 space-y-4"
+              >
+                <div>
+                  <label htmlFor="nombre" className="block text-sm font-semibold text-slate-700 mb-1.5">Nombre</label>
+                  <input type="text" name="nombre" id="nombre" defaultValue={taller.nombre} required className="block w-full rounded-xl border border-slate-200 bg-slate-50 focus:bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
 
-          <div>
-            <label htmlFor="direccion" className="block text-sm font-semibold text-slate-700 mb-1">Dirección</label>
-            <textarea name="direccion" id="direccion" rows={2} defaultValue={taller.direccion || ""} className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 resize-none" />
-          </div>
+                <div>
+                  <label htmlFor="telefono" className="block text-sm font-semibold text-slate-700 mb-1.5">Teléfono</label>
+                  <input type="text" name="telefono" id="telefono" defaultValue={taller.telefono || ""} className="block w-full rounded-xl border border-slate-200 bg-slate-50 focus:bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
 
-          <TallerAtributosFields
-            defaultDestacado={Boolean(taller.destacado)}
-            defaultCapacidad={taller.capacidad}
-          />
+                <div>
+                  <label htmlFor="direccion" className="block text-sm font-semibold text-slate-700 mb-1.5">Dirección</label>
+                  <textarea name="direccion" id="direccion" rows={2} defaultValue={taller.direccion || ""} className="block w-full rounded-xl border border-slate-200 bg-slate-50 focus:bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none transition-all" />
+                </div>
 
-          <div className="pt-4 mt-4">
-            <button type="submit" className="w-full bg-blue-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-blue-700 transition-all shadow-sm cursor-pointer">
-              Guardar Cambios
-            </button>
+                <TallerAtributosFields
+                  defaultDestacado={Boolean(taller.destacado)}
+                  defaultCapacidad={taller.capacidad}
+                />
+
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 pt-4 mt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full sm:w-auto px-4 py-2.5 font-semibold text-sm text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm cursor-pointer">
+                    Guardar Cambios
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </form>
-      </div>
+        </ModalPortal>
+      )}
     </>
   );
 }

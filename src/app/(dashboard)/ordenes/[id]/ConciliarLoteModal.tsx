@@ -5,6 +5,7 @@ import { conciliarAsignacion } from "@/app/actions/asignacionActions";
 import { toast } from "sonner";
 import { CheckCircle2, X } from "lucide-react";
 import type { Taller } from "@prisma/client";
+import ModalPortal from "@/components/ModalPortal";
 
 export default function ConciliarLoteModal({
   asignacion,
@@ -43,16 +44,23 @@ export default function ConciliarLoteModal({
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 text-left max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100 shrink-0">
-              <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-blue-600" /> Conciliar Lote
-              </h3>
-              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        <ModalPortal>
+          <div
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setIsOpen(false)}
+          >
+            <div
+              className="bg-white rounded-t-3xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 text-left max-h-[90vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-4 sm:px-5 border-b border-slate-100 shrink-0">
+                <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-blue-600" /> Conciliar Lote
+                </h3>
+                <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100 cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             
             <form action={async (formData) => {
               if (!cuadreOk) {
@@ -208,14 +216,15 @@ export default function ConciliarLoteModal({
                 <button 
                   type="submit" 
                   disabled={isPending || !cuadreOk}
-                  className="bg-blue-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="bg-blue-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isPending ? "Procesando..." : "Confirmar Recepción"}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
       )}
     </>
   );

@@ -5,7 +5,7 @@ import EmptyState from "@/components/EmptyState";
 import { requireAuth } from "@/lib/auth";
 import ImageLightbox from "@/components/ImageLightbox";
 import OrdenesFiltros from "@/components/OrdenesFiltros";
-import { nombreOrden, estadoOrden } from "@/lib/ordenes";
+import { nombreOrden, estadoOrden, parseVariantes } from "@/lib/ordenes";
 import type { Prisma } from "@prisma/client";
 
 export default async function Ordenes({
@@ -87,6 +87,8 @@ export default async function Ordenes({
           const pct = Math.round(((orden.estado === 'CORTE' ? 0 : buenas) / orden.cantidadTotal) * 100);
           const estado = estadoOrden(orden.estado);
           const nombre = nombreOrden(orden);
+          const variantes = parseVariantes(orden.coloresDetalles);
+          const fechaCreacion = orden.createdAt.toLocaleDateString("es-CO", { day: "2-digit", month: "short" });
 
           return (
             <Link key={orden.id} href={`/ordenes/${orden.id}`} className="block group">
@@ -112,7 +114,28 @@ export default async function Ordenes({
                       </h2>
                       <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full shrink-0 ${estado.badge}`}>{estado.label}</span>
                     </div>
-                    <p className="text-sm text-slate-500 font-medium truncate">{orden.cliente.nombre}</p>
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium truncate">
+                      {orden.cliente.nombre} <span className="text-slate-300">•</span> <span className="text-slate-400">{fechaCreacion}</span>
+                    </p>
+
+                    {variantes.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                        {variantes.slice(0, 4).map((v, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100/90 text-[11px] font-semibold text-slate-700 max-w-[140px] truncate"
+                          >
+                            {v.cantidad !== null && <span className="font-bold text-slate-900">{v.cantidad}x</span>}
+                            <span className="truncate">{v.detalle}</span>
+                          </span>
+                        ))}
+                        {variantes.length > 4 && (
+                          <span className="text-[10px] font-bold text-slate-400 px-1.5">
+                            +{variantes.length - 4} más
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Progreso compacto en móvil */}
                     <div className="sm:hidden mt-2 flex items-center gap-2">

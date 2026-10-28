@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus, Users, Search, Phone } from "lucide-react";
+import { Plus, Users, Search, Phone, MessageCircle } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import { requireAuth } from "@/lib/auth";
 import ClienteEditModal from "@/components/ClienteEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { canDelete } from "@/lib/permissions";
+import { getContactoLinks } from "@/lib/talleres";
 
 export default async function Clientes({
   searchParams,
@@ -67,7 +68,9 @@ export default async function Clientes({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
-        {clientes.map((cliente) => (
+        {clientes.map((cliente) => {
+          const contacto = getContactoLinks(cliente.telefono);
+          return (
           <div key={cliente.id} className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/70 hover:shadow-md hover:border-blue-200 transition-all flex flex-col h-full">
             <div className="flex justify-between items-start gap-2 mb-3">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -88,24 +91,52 @@ export default async function Clientes({
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-1.5 pt-3 border-t border-slate-100">
-              <ClienteEditModal cliente={cliente} />
-              {permiteEliminar && cliente._count.ordenes === 0 && (
-                <DeleteConfirmModal 
-                  action={async () => {
-                    "use server";
-                    const { deleteCliente } = await import("@/app/actions/clienteActions");
-                    await deleteCliente(cliente.id);
-                  }}
-                  title="¿Eliminar cliente?"
-                  description={`Estás a punto de eliminar a ${cliente.nombre}.`}
-                  buttonText="Eliminar"
-                  iconOnly={true}
-                />
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
+              {contacto ? (
+                <div className="flex items-center gap-1.5">
+                  <a
+                    href={contacto.whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Escribir por WhatsApp"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href={contacto.telHref}
+                    title="Llamar"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Llamar</span>
+                  </a>
+                </div>
+              ) : (
+                <span />
               )}
+
+              <div className="flex items-center gap-1">
+                <ClienteEditModal cliente={cliente} />
+                {permiteEliminar && cliente._count.ordenes === 0 && (
+                  <DeleteConfirmModal 
+                    action={async () => {
+                      "use server";
+                      const { deleteCliente } = await import("@/app/actions/clienteActions");
+                      await deleteCliente(cliente.id);
+                    }}
+                    title="¿Eliminar cliente?"
+                    description={`Estás a punto de eliminar a ${cliente.nombre}.`}
+                    buttonText="Eliminar"
+                    iconOnly={true}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        ))}
+          );
+        })}
         
         {clientes.length === 0 && (
           <div className="col-span-full">
