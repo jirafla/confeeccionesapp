@@ -51,38 +51,49 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Desktop Sidebar */}
       <aside 
         className={`hidden sm:flex flex-col ${
-          isCollapsed ? "w-20" : "w-64"
-        } bg-white border-r border-slate-100 flex-shrink-0 transition-all duration-300 ease-in-out`}
+          isCollapsed ? "w-[72px]" : "w-60"
+        } bg-white border-r border-slate-200/70 flex-shrink-0 transition-all duration-200 ease-in-out`}
       >
         <div 
-          className={`${
-            isCollapsed ? "py-3 flex flex-col items-center gap-1.5 px-2" : "h-20 flex items-center justify-between px-6"
-          } border-b border-slate-50`}
+          className={`h-16 flex items-center ${
+            isCollapsed ? "justify-center px-2" : "justify-between px-4"
+          } border-b border-slate-100`}
         >
           <Link 
             href="/" 
-            className="font-bold text-xl tracking-tight text-slate-900 flex items-center gap-3 min-w-0" 
+            className="font-bold text-base tracking-tight text-slate-900 flex items-center gap-2.5 min-w-0" 
             title="Confección"
           >
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold shadow-md shadow-blue-600/20 shrink-0">
+            <div className="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold shadow-xs shrink-0 text-sm">
               C
             </div>
             {!isCollapsed && <span className="truncate">Confección</span>}
           </Link>
 
-          <div className="flex items-center gap-0.5">
-            <NotificationCenter />
+          {!isCollapsed && (
             <button
               onClick={toggleCollapsed}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              title={isCollapsed ? "Expandir menú" : "Contraer menú"}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+              title="Contraer menú"
             >
-              {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {isCollapsed && (
+          <div className="px-2 pt-3 flex justify-center">
+            <button
+              onClick={toggleCollapsed}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Expandir menú"
+            >
+              <PanelLeftOpen className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        )}
         
-        <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-4"} py-6 space-y-1.5 overflow-y-auto`}>
+        <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-3"} py-4 space-y-1 overflow-y-auto`}>
           {links.map((link) => {
             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
             const Icon = link.icon;
@@ -92,40 +103,36 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 href={link.href}
                 title={isCollapsed ? link.label : undefined}
                 className={`flex items-center ${
-                  isCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl"
-                } transition-all duration-200 ${
+                  isCollapsed ? "justify-center p-2.5 rounded-xl" : "gap-3 px-3.5 py-2.5 rounded-xl"
+                } transition-all duration-150 ${
                   isActive 
-                    ? "bg-blue-50 text-blue-600 font-semibold shadow-sm" 
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"
+                    ? "bg-blue-50/90 text-blue-600 font-semibold" 
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
                 }`}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
                 {!isCollapsed && <span className="truncate text-sm">{link.label}</span>}
               </Link>
             );
           })}
+
+          <NotificationCenter variant="nav-item" collapsed={isCollapsed} />
         </nav>
         
-        <div className={`${isCollapsed ? "p-3" : "p-6"} border-t border-slate-50`}>
+        <div className={`${isCollapsed ? "p-2" : "p-3"} border-t border-slate-100 space-y-1`}>
           <PwaInstallButton variant="sidebar" collapsed={isCollapsed} />
           <form action={logout}>
             <button 
               type="submit" 
-              title={isCollapsed ? "Cerrar Sesión" : undefined}
-              className={`w-full flex items-center justify-center ${
-                isCollapsed ? "p-3" : "gap-2 px-4 py-3"
-              } text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors mb-3`}
+              title={isCollapsed ? "Cerrar sesión" : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? "justify-center p-2.5" : "gap-3 px-3.5 py-2.5"
+              } text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50/70 rounded-xl transition-colors cursor-pointer`}
             >
-              <LogOut className="w-4 h-4 shrink-0" />
-              {!isCollapsed && <span>Cerrar Sesión</span>}
+              <LogOut className="w-[18px] h-[18px] text-slate-400 group-hover:text-rose-600 shrink-0" />
+              {!isCollapsed && <span className="truncate">Cerrar sesión</span>}
             </button>
           </form>
-          {!isCollapsed && (
-            <div className="bg-slate-50 p-4 rounded-2xl">
-               <p className="text-xs text-slate-500 font-medium">Gestión de Producción</p>
-               <p className="text-[10px] text-slate-400 mt-1">v2.0.0 (SaaS)</p>
-            </div>
-          )}
         </div>
       </aside>
 

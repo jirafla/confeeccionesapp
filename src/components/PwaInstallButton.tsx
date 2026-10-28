@@ -98,13 +98,13 @@ export default function PwaInstallButton({
         <button
           type="button"
           onClick={handleInstallClick}
-          title={collapsed ? "Instalar App (PWA)" : undefined}
-          className={`w-full flex items-center justify-center ${
-            collapsed ? "p-3" : "gap-2 px-4 py-2.5"
-          } text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors mb-2.5`}
+          title={collapsed ? "Instalar aplicación" : undefined}
+          className={`w-full flex items-center ${
+            collapsed ? "justify-center p-2.5" : "gap-3 px-3.5 py-2.5"
+          } text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50/60 rounded-xl transition-colors cursor-pointer`}
         >
-          <Download className="w-4 h-4 shrink-0" />
-          {!collapsed && <span>Instalar App en dispositivo</span>}
+          <Download className="w-[18px] h-[18px] text-slate-400 shrink-0" />
+          {!collapsed && <span className="truncate">Instalar aplicación</span>}
         </button>
       )}
 

@@ -59,7 +59,13 @@ async function dispararNotificacionNativa(payload: {
   }
 }
 
-export default function NotificationCenter() {
+export default function NotificationCenter({
+  variant = "icon",
+  collapsed = false,
+}: {
+  variant?: "icon" | "nav-item";
+  collapsed?: boolean;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [notificaciones, setNotificaciones] = useState<NotificacionItem[]>([]);
   const [readIds, setReadIds] = useState<string[]>([]);
@@ -217,25 +223,67 @@ export default function NotificationCenter() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => {
-          setIsOpen(true);
-          cargarNotificaciones();
-        }}
-        aria-label="Notificaciones"
-        title="Notificaciones"
-        className="relative p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-      >
-        <Bell className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-        {totalNoLeidas > 0 && (
-          <span
-            className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ring-white ${
-              hayUrgentes ? "bg-rose-500" : "bg-blue-600"
-            }`}
-          />
-        )}
-      </button>
+      {variant === "nav-item" ? (
+        <button
+          type="button"
+          onClick={() => {
+            setIsOpen(true);
+            cargarNotificaciones();
+          }}
+          title={collapsed ? "Notificaciones" : undefined}
+          className={`relative w-full flex items-center ${
+            collapsed ? "justify-center p-2.5 rounded-xl" : "justify-between px-3.5 py-2.5 rounded-xl"
+          } transition-all duration-150 cursor-pointer ${
+            isOpen
+              ? "bg-blue-50 text-blue-600 font-semibold"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
+          }`}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <Bell className={`w-[18px] h-[18px] shrink-0 ${isOpen ? "text-blue-600" : "text-slate-400"}`} />
+            {!collapsed && <span className="truncate text-sm">Notificaciones</span>}
+          </div>
+          {totalNoLeidas > 0 && (
+            collapsed ? (
+              <span
+                className={`absolute top-2 right-2 w-2 h-2 rounded-full ring-2 ring-white ${
+                  hayUrgentes ? "bg-rose-500" : "bg-blue-600"
+                }`}
+              />
+            ) : (
+              <span
+                className={`px-1.5 py-0.5 text-[11px] font-bold rounded-full leading-none ${
+                  hayUrgentes
+                    ? "bg-rose-50 text-rose-600 ring-1 ring-rose-200/80"
+                    : "bg-blue-50 text-blue-600"
+                }`}
+              >
+                {totalNoLeidas}
+              </span>
+            )
+          )}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setIsOpen(true);
+            cargarNotificaciones();
+          }}
+          aria-label="Notificaciones"
+          title="Notificaciones"
+          className="relative p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+        >
+          <Bell className="w-5 h-5" />
+          {totalNoLeidas > 0 && (
+            <span
+              className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ring-2 ring-white ${
+                hayUrgentes ? "bg-rose-500" : "bg-blue-600"
+              }`}
+            />
+          )}
+        </button>
+      )}
 
       {isOpen && (
         <ModalPortal>
