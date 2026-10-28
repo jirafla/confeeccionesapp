@@ -6,7 +6,7 @@ import TallerEditModal from "@/components/TallerEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import EmptyState from "@/components/EmptyState";
 import { nombreOrden } from "@/lib/ordenes";
-import { getCapacidadInfo } from "@/components/TallerAtributosFields";
+import { getCapacidadInfo } from "@/lib/talleres";
 
 import { requireAuth } from "@/lib/auth";
 import { canViewCosts, canDelete } from "@/lib/permissions";

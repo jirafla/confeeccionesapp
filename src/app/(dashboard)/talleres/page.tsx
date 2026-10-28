@@ -5,7 +5,7 @@ import { Plus, Phone, MapPin, Factory, ChevronRight, Star } from "lucide-react";
 import SearchInput from "@/components/SearchInput";
 import EmptyState from "@/components/EmptyState";
 import TalleresSortSelect from "./TalleresSortSelect";
-import { getCapacidadInfo } from "@/components/TallerAtributosFields";
+import { getCapacidadInfo } from "@/lib/talleres";
 
 import { requireAuth } from "@/lib/auth";
 

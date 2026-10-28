@@ -13,18 +13,24 @@ export default function SearchInput({ placeholder }: { placeholder: string }) {
   const [query, setQuery] = useState(initialQuery);
 
   useEffect(() => {
+    const currentQ = searchParams.get("q") || "";
+    if (query === currentQ) return;
+
     const delayDebounceFn = setTimeout(() => {
       startTransition(() => {
-        if (query) {
-          router.push(`${pathname}?q=${encodeURIComponent(query)}`);
+        const params = new URLSearchParams(searchParams.toString());
+        if (query.trim()) {
+          params.set("q", query.trim());
         } else {
-          router.push(pathname);
+          params.delete("q");
         }
+        const qs = params.toString();
+        router.push(qs ? `${pathname}?${qs}` : pathname);
       });
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query, pathname, router]);
+  }, [query, pathname, router, searchParams]);
 
   return (
     <div className="relative flex-1">
@@ -34,11 +40,11 @@ export default function SearchInput({ placeholder }: { placeholder: string }) {
         </svg>
       </div>
       <input
-        type="text"
+        type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-slate-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+        className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
       />
     </div>
   );

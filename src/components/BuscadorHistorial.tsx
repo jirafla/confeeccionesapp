@@ -11,19 +11,23 @@ export default function BuscadorHistorial() {
   const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState(searchParams.get("q") || "");
 
-  // Debounce logic
+  // Debounce logic: solo navegar si cambió el texto buscado respecto a la URL
   useEffect(() => {
+    const currentQ = searchParams.get("q") || "";
+    if (query === currentQ) return;
+
     const timeoutId = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      if (query) {
-        params.set("q", query);
+      if (query.trim()) {
+        params.set("q", query.trim());
       } else {
         params.delete("q");
       }
       params.set("p", "1"); // Reset page on search
 
       startTransition(() => {
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        const qs = params.toString();
+        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
       });
     }, 400);
 
