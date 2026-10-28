@@ -115,11 +115,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
-
-          <NotificationCenter variant="nav-item" collapsed={isCollapsed} />
         </nav>
         
         <div className={`${isCollapsed ? "p-2" : "p-3"} border-t border-slate-100 space-y-1`}>
+          <NotificationCenter variant="nav-item" collapsed={isCollapsed} />
           <PwaInstallButton variant="sidebar" collapsed={isCollapsed} />
           <form action={logout}>
             <button 
