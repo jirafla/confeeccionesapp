@@ -49,7 +49,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
 
   const talleres = await prisma.taller.findMany({
     where: { empresaId: empresa.id },
-    orderBy: { nombre: 'asc' }
+    orderBy: [{ destacado: 'desc' }, { nombre: 'asc' }]
   });
 
   const nombre = nombreOrden(orden);

@@ -58,6 +58,8 @@ model Taller {
   nombre    String
   telefono  String?
   direccion String?
+  destacado Boolean  @default(false)
+  capacidad String?  // "BAJA", "MEDIA", "ALTA"
   asignaciones Asignacion[]
   
   empresaId String

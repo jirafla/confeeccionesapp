@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Phone, MapPin, Search, Calendar, CheckCircle2, Factory } from "lucide-react";
+import { ArrowLeft, Phone, MapPin, Search, Calendar, CheckCircle2, Factory, Star } from "lucide-react";
 import TallerEditModal from "@/components/TallerEditModal";
 import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import EmptyState from "@/components/EmptyState";
 import { nombreOrden } from "@/lib/ordenes";
+import { getCapacidadInfo } from "@/components/TallerAtributosFields";
 
 import { requireAuth } from "@/lib/auth";
 import { canViewCosts, canDelete } from "@/lib/permissions";
@@ -45,6 +46,9 @@ export default async function DetalleTaller({
     );
   }
 
+  const cap = getCapacidadInfo(taller.capacidad);
+  const CapIcon = cap?.icon;
+
   const query = q?.toLowerCase() || "";
   const asignacionesFiltradas = taller.asignaciones.filter(a => 
     nombreOrden(a.orden).toLowerCase().includes(query) ||
@@ -67,9 +71,17 @@ export default async function DetalleTaller({
         </Link>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider truncate">Perfil del Taller</p>
-          <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight truncate" title={taller.nombre}>
-            {taller.nombre}
-          </h1>
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight truncate" title={taller.nombre}>
+              {taller.nombre}
+            </h1>
+            {taller.destacado && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 shrink-0">
+                <Star className="w-3.5 h-3.5 fill-current text-amber-500" />
+                Destacado
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -78,10 +90,18 @@ export default async function DetalleTaller({
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200/80">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${taller.destacado ? "bg-amber-100 text-amber-600" : "bg-indigo-50 text-indigo-600"}`}>
                 <Factory className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900 truncate" title={taller.nombre}>{taller.nombre}</h2>
+              <div className="min-w-0">
+                <h2 className="text-lg font-bold text-slate-900 truncate" title={taller.nombre}>{taller.nombre}</h2>
+                {cap && CapIcon && (
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 mt-1 rounded-md text-xs font-bold ${cap.badgeCls}`}>
+                    <CapIcon className="w-3.5 h-3.5" />
+                    Capacidad {cap.label} ({cap.desc})
+                  </span>
+                )}
+              </div>
             </div>
             
             <div className="space-y-3 text-sm text-slate-600 mb-6">
@@ -206,4 +226,3 @@ export default async function DetalleTaller({
     </div>
   );
 }
-

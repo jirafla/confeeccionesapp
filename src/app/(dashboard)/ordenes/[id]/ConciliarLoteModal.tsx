@@ -167,9 +167,14 @@ export default function ConciliarLoteModal({
                             className="w-full rounded-lg border border-slate-200 bg-white text-sm py-2 px-3 font-medium"
                           >
                             <option value="">Selecciona...</option>
-                            {talleres.map(t => (
-                              <option key={t.id} value={t.id} disabled={t.id === asignacion.tallerId}>{t.nombre}</option>
-                            ))}
+                            {talleres.map(t => {
+                              const capLabel = t.capacidad === "ALTA" ? " · Cap. Alta" : t.capacidad === "MEDIA" ? " · Cap. Media" : t.capacidad === "BAJA" ? " · Cap. Baja" : "";
+                              return (
+                                <option key={t.id} value={t.id} disabled={t.id === asignacion.tallerId}>
+                                  {t.destacado ? `★ ${t.nombre}` : t.nombre}{capLabel}
+                                </option>
+                              );
+                            })}
                           </select>
                         </div>
                       )}

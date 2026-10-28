@@ -81,7 +81,14 @@ export default function AsignarTallerModal({
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Seleccionar Taller <span className="text-red-500">*</span></label>
                   <select name="tallerId" required className="w-full rounded-lg border-slate-200 bg-slate-50 text-sm py-2 px-3">
                     <option value="">Seleccione...</option>
-                    {talleres.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
+                    {talleres.map((t) => {
+                      const capLabel = t.capacidad === "ALTA" ? " · Cap. Alta" : t.capacidad === "MEDIA" ? " · Cap. Media" : t.capacidad === "BAJA" ? " · Cap. Baja" : "";
+                      return (
+                        <option key={t.id} value={t.id}>
+                          {t.destacado ? `★ ${t.nombre}` : t.nombre}{capLabel}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 <div>
