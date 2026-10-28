@@ -15,21 +15,43 @@ import {
 import DashboardCharts from "@/components/DashboardCharts";
 import BuscadorHistorial from "@/components/BuscadorHistorial";
 import PaginacionHistorial from "@/components/PaginacionHistorial";
+import FiltroPeriodoDashboard from "@/components/FiltroPeriodoDashboard";
 import { requireAuth } from "@/lib/auth";
-import { nombreOrden, estadoOrden } from "@/lib/ordenes";
+import { nombreOrden } from "@/lib/ordenes";
 import { Prisma } from "@prisma/client";
 
 const fmtFecha = (d: Date) => d.toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 
-export default async function Home(props: { searchParams: Promise<{ q?: string; p?: string }> }) {
+const NOMBRES_MESES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+];
+
+export default async function Home(props: {
+  searchParams: Promise<{ q?: string; p?: string; mes?: string; anio?: string }>;
+}) {
   const searchParams = await props.searchParams;
   const page = parseInt(searchParams.p || "1") || 1;
   const query = searchParams.q || "";
   const TAKE = 15;
 
+  const ahora = new Date();
+  const mesActual = ahora.getMonth() + 1;
+  const anioActual = ahora.getFullYear();
+
+  const mesParsed = parseInt(searchParams.mes || "");
+  const anioParsed = parseInt(searchParams.anio || "");
+
+  const mesSeleccionado = mesParsed >= 1 && mesParsed <= 12 ? mesParsed : mesActual;
+  const anioSeleccionado = anioParsed >= 2000 && anioParsed <= 2100 ? anioParsed : anioActual;
+
+  const inicioMes = new Date(anioSeleccionado, mesSeleccionado - 1, 1, 0, 0, 0, 0);
+  const finMes = new Date(anioSeleccionado, mesSeleccionado, 1, 0, 0, 0, 0);
+  const nombrePeriodo = `${NOMBRES_MESES[mesSeleccionado - 1]} ${anioSeleccionado}`;
+
   const { empresa } = await requireAuth();
 
-  // 1. Talleres con sus asignaciones
+  // 1. Talleres con sus asignaciones (Estado activo en tiempo real)
   const talleres = await prisma.taller.findMany({
     where: { empresaId: empresa.id },
     include: {
@@ -66,33 +88,55 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
     orderBy: { createdAt: 'desc' }
   });
 
-  const totalPrendas = ordenes.reduce((acc, o) => acc + o.cantidadTotal, 0);
-
-  const prendasBuenas = ordenes.reduce((acc, o) => 
-    acc + o.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0), 0);
-
+  // Trabajo activo (en curso)
   const ordenesCorteList = ordenes.filter(o => o.estado === "CORTE");
   const ordenesConfeccionList = ordenes.filter(o => o.estado === "CONFECCION");
-  const ordenesEntregadasAll = ordenes.filter(o => o.estado === "ENTREGADO");
+
+  // Órdenes entregadas en el Mes y Año seleccionados
+  const ordenesEntregadasMes = ordenes.filter(o => {
+    if (o.estado !== "ENTREGADO") return false;
+    const fechaRef = o.fechaEntregado || o.updatedAt;
+    return fechaRef >= inicioMes && fechaRef < finMes;
+  });
 
   const prendasEnCorte = ordenesCorteList.reduce((acc, o) => acc + o.cantidadTotal, 0);
   const prendasEnConfeccion = ordenesConfeccionList.reduce((acc, o) => acc + o.cantidadTotal, 0);
-  const prendasEntregadas = ordenesEntregadasAll.reduce((acc, o) => {
+  const prendasEntregadasMes = ordenesEntregadasMes.reduce((acc, o) => {
     const buenasOrden = o.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
     return acc + (buenasOrden > 0 ? buenasOrden : o.cantidadTotal);
   }, 0);
 
-  // Órdenes entregadas al cliente para el historial (Paginadas y Filtradas)
+  // Órdenes del período para el gráfico de Producción vs Recibidas del mes
+  const ordenesDelPeriodo = ordenes.filter(o => {
+    const creadaEnMes = o.createdAt >= inicioMes && o.createdAt < finMes;
+    const fechaEntregaRef = o.fechaEntregado || o.updatedAt;
+    const entregadaEnMes = o.estado === "ENTREGADO" && fechaEntregaRef >= inicioMes && fechaEntregaRef < finMes;
+    return creadaEnMes || entregadaEnMes;
+  });
+
+  const totalPrendasMes = ordenesDelPeriodo.reduce((acc, o) => acc + o.cantidadTotal, 0);
+  const prendasBuenasMes = ordenesDelPeriodo.reduce((acc, o) => 
+    acc + o.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0), 0);
+
+  // 3. Órdenes entregadas al cliente para el historial (Paginadas y Filtradas por Mes/Año y búsqueda)
   const historialWhere: Prisma.OrdenProduccionWhereInput = {
     empresaId: empresa.id,
     estado: "ENTREGADO",
-    ...(query ? {
-      OR: [
-        { referencia: { nombrePrenda: { contains: query, mode: 'insensitive' } } },
-        { referencia: { codigo: { contains: query, mode: 'insensitive' } } },
-        { cliente: { nombre: { contains: query, mode: 'insensitive' } } }
-      ]
-    } : {})
+    AND: [
+      {
+        OR: [
+          { fechaEntregado: { gte: inicioMes, lt: finMes } },
+          { fechaEntregado: null, updatedAt: { gte: inicioMes, lt: finMes } }
+        ]
+      },
+      ...(query ? [{
+        OR: [
+          { referencia: { nombrePrenda: { contains: query, mode: 'insensitive' as const } } },
+          { referencia: { codigo: { contains: query, mode: 'insensitive' as const } } },
+          { cliente: { nombre: { contains: query, mode: 'insensitive' as const } } }
+        ]
+      }] : [])
+    ]
   };
 
   const totalHistorial = await prisma.ordenProduccion.count({ where: historialWhere });
@@ -112,15 +156,15 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
     skip: (page - 1) * TAKE
   });
 
-  // Data for charts
+  // Data for charts (Corte activo, Confección activa y Entregadas en el mes seleccionado)
   const ordenesPorEstado = [
     { name: "Corte", value: ordenesCorteList.length, fill: "#f97316" },
     { name: "Confección", value: ordenesConfeccionList.length, fill: "#3b82f6" },
-    { name: "Entregado", value: ordenesEntregadasAll.length, fill: "#22c55e" }
+    { name: `Entregado (${NOMBRES_MESES[mesSeleccionado - 1]})`, value: ordenesEntregadasMes.length, fill: "#22c55e" }
   ].filter(item => item.value > 0);
 
   const datosProduccion = [
-    { name: "Prendas", total: totalPrendas, pagado: prendasBuenas }
+    { name: NOMBRES_MESES[mesSeleccionado - 1], total: totalPrendasMes, pagado: prendasBuenasMes }
   ];
 
   return (
@@ -129,7 +173,7 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight truncate">Panel de Control</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">Resumen de producción, talleres y entregas.</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">Resumen de producción, talleres y entregas de {nombrePeriodo}.</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link 
@@ -152,6 +196,14 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
           </Link>
         </div>
       </div>
+
+      {/* FILTRO DE PERÍODO (MES Y AÑO) */}
+      <FiltroPeriodoDashboard
+        mesSeleccionado={mesSeleccionado}
+        anioSeleccionado={anioSeleccionado}
+        mesActual={mesActual}
+        anioActual={anioActual}
+      />
 
       {/* SECCIÓN 1: KPIS DE TALLERES */}
       <div>
@@ -286,7 +338,9 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             className="group bg-white p-4 sm:p-5 rounded-2xl border border-emerald-200/80 shadow-sm bg-gradient-to-br from-white to-emerald-50/30 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Órdenes Entregadas</span>
+              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                Entregadas ({NOMBRES_MESES[mesSeleccionado - 1]})
+              </span>
               <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
                 <PackageCheck className="w-4 h-4" />
               </div>
@@ -294,10 +348,10 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             <div className="mt-3 flex items-end justify-between">
               <div>
                 <p className="text-2xl sm:text-3xl font-black text-emerald-600">
-                  {ordenesEntregadasAll.length}
+                  {ordenesEntregadasMes.length}
                 </p>
                 <p className="text-xs text-emerald-700 font-medium mt-1">
-                  {prendasEntregadas.toLocaleString("es-CO")} prendas entregadas
+                  {prendasEntregadasMes.toLocaleString("es-CO")} prendas entregadas en {NOMBRES_MESES[mesSeleccionado - 1].toLowerCase()}
                 </p>
               </div>
               <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
@@ -315,10 +369,10 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
           <div>
             <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <PackageCheck className="w-5 h-5 text-emerald-600" />
-              Historial de Órdenes Entregadas
+              Historial de Órdenes Entregadas — {nombrePeriodo}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Registro histórico de prendas y lotes que ya fueron finalizados y entregados al cliente.
+              Registro de prendas y órdenes finalizadas y entregadas al cliente en {nombrePeriodo.toLowerCase()}.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -334,9 +388,11 @@ export default async function Home(props: { searchParams: Promise<{ q?: string; 
             <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <p className="font-bold text-slate-800 text-sm">No se encontraron órdenes</p>
+            <p className="font-bold text-slate-800 text-sm">No se encontraron órdenes en {nombrePeriodo}</p>
             <p className="text-xs text-slate-500 max-w-sm mt-1">
-              No hay órdenes entregadas que coincidan con la búsqueda.
+              {query
+                ? "No hay órdenes entregadas en este mes que coincidan con la búsqueda."
+                : `Aún no se registran órdenes entregadas durante ${nombrePeriodo.toLowerCase()}.`}
             </p>
           </div>
         ) : (
