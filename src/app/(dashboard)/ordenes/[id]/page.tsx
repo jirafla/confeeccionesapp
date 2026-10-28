@@ -436,7 +436,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                     talleres={talleres}
                     pendientes={pendientesPorAsignar}
                     mostrarPrecios={mostrarPrecios}
-                    insumosSugeridos={resumenInsumosTaller}
+                    insumos={insumos}
                   />
                 )}
               </div>
@@ -454,7 +454,7 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                     pendientes={pendientesPorAsignar}
                     isFirst={true}
                     mostrarPrecios={mostrarPrecios}
-                    insumosSugeridos={resumenInsumosTaller}
+                    insumos={insumos}
                   />
                 </div>
               ) : (
@@ -531,7 +531,17 @@ export default async function OrdenDetail({ params }: { params: Promise<{ id: st
                         )}
 
                         {asig.insumosEntregados && (
-                          <p className="text-xs text-slate-500 mt-2"><span className="font-semibold">Insumos:</span> {asig.insumosEntregados}</p>
+                          <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Insumos entregados:</span>
+                            {asig.insumosEntregados.split("|").map((item, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center text-xs font-semibold bg-indigo-50/70 text-indigo-800 border border-indigo-100 px-2.5 py-0.5 rounded-md"
+                              >
+                                {item.trim()}
+                              </span>
+                            ))}
+                          </div>
                         )}
 
                         {!recibido && (
