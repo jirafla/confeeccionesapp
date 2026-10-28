@@ -13,7 +13,6 @@ import {
   Scissors
 } from "lucide-react";
 import DashboardCharts from "@/components/DashboardCharts";
-import BuscadorHistorial from "@/components/BuscadorHistorial";
 import PaginacionHistorial from "@/components/PaginacionHistorial";
 import FiltroPeriodoDashboard from "@/components/FiltroPeriodoDashboard";
 import LotesPorEntregarPanel, { LotePendienteDashboard } from "@/components/LotesPorEntregarPanel";
@@ -384,147 +383,133 @@ export default async function Home(props: {
         </div>
       </div>
 
-      {/* SECCIÓN 2.5: LISTADO DE LOTES POR ENTREGAR POR TALLER */}
-      <LotesPorEntregarPanel lotes={lotesPendientesDashboard} />
-
       {/* SECCIÓN 3: GRÁFICOS */}
       <DashboardCharts lotesPorEstado={ordenesPorEstado} datosProduccion={datosProduccion} />
 
-      {/* SECCIÓN 4: HISTORIAL DE ENTREGADOS EN TABLA */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
-          <div>
-            <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-              <PackageCheck className="w-5 h-5 text-emerald-600" />
-              Historial de Órdenes Entregadas — {nombrePeriodo}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Registro de prendas y órdenes finalizadas y entregadas al cliente en {nombrePeriodo.toLowerCase()}.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <BuscadorHistorial />
-            <span className="self-start sm:self-auto px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 shrink-0">
-              {totalHistorial} {totalHistorial === 1 ? "orden" : "órdenes"}
-            </span>
-          </div>
-        </div>
-
-        {ordenesEntregadas.length === 0 ? (
-          <div className="p-10 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
-              <AlertCircle className="w-6 h-6" />
+      {/* SECCIÓN 4: TABLA CON PESTAÑAS (LOTES POR RECIBIR | HISTORIAL ENTREGADAS) */}
+      <LotesPorEntregarPanel
+        lotes={lotesPendientesDashboard}
+        nombrePeriodo={nombrePeriodo}
+        totalHistorial={totalHistorial}
+        query={query}
+        defaultTab={page > 1 || lotesPendientesDashboard.length === 0 ? "HISTORIAL" : "LOTES"}
+        historialContent={
+          ordenesEntregadas.length === 0 ? (
+            <div className="p-10 text-center flex flex-col items-center">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <p className="font-bold text-slate-800 text-sm">No se encontraron órdenes en {nombrePeriodo}</p>
+              <p className="text-xs text-slate-500 max-w-sm mt-1">
+                {query
+                  ? "No hay órdenes entregadas en este mes que coincidan con la búsqueda."
+                  : `Aún no se registran órdenes entregadas durante ${nombrePeriodo.toLowerCase()}.`}
+              </p>
             </div>
-            <p className="font-bold text-slate-800 text-sm">No se encontraron órdenes en {nombrePeriodo}</p>
-            <p className="text-xs text-slate-500 max-w-sm mt-1">
-              {query
-                ? "No hay órdenes entregadas en este mes que coincidan con la búsqueda."
-                : `Aún no se registran órdenes entregadas durante ${nombrePeriodo.toLowerCase()}.`}
-            </p>
-          </div>
-        ) : (
-          <>
-          {/* Móvil: tarjetas */}
-          <ul className="sm:hidden divide-y divide-slate-100">
-            {ordenesEntregadas.map((orden) => {
-              const buenas = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
-              const fecha = orden.fechaEntregado || orden.updatedAt;
-              return (
-                <li key={orden.id}>
-                  <Link href={`/ordenes/${orden.id}/resumen`} className="flex items-center gap-3 p-4 active:bg-slate-50">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                      <PackageCheck className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-black text-slate-900 truncate">{nombreOrden(orden)}</p>
-                      <p className="text-xs text-slate-500 truncate">{orden.cliente.nombre} • {fmtFecha(fecha)}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-bold text-emerald-700">{buenas}</p>
-                      <p className="text-[11px] text-slate-400">/ {orden.cantidadTotal} uds</p>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-700">
-              <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 tracking-wider border-b border-slate-100">
-                <tr>
-                  <th className="py-3 px-4 sm:px-6">Orden</th>
-                  <th className="py-3 px-4">Cliente</th>
-                  <th className="py-3 px-4">Referencia</th>
-                  <th className="py-3 px-4">Prendas</th>
-                  <th className="py-3 px-4 hidden md:table-cell">Talleres</th>
-                  <th className="py-3 px-4">Fecha Entrega</th>
-                  <th className="py-3 px-4 text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          ) : (
+            <>
+              {/* Móvil: tarjetas */}
+              <ul className="sm:hidden divide-y divide-slate-100">
                 {ordenesEntregadas.map((orden) => {
                   const buenas = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
-                  const talleresNombres = Array.from(new Set(orden.asignaciones.map(a => a.taller.nombre)));
                   const fecha = orden.fechaEntregado || orden.updatedAt;
-
                   return (
-                    <tr key={orden.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3.5 px-4 sm:px-6 font-black text-slate-900 whitespace-nowrap">
-                        <Link href={`/ordenes/${orden.id}/resumen`} className="hover:text-blue-600 transition-colors">
-                          {nombreOrden(orden)}
-                        </Link>
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
-                        {orden.cliente.nombre}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
-                        <Link href={`/referencias/${orden.referencia.id}`} className="hover:text-blue-600 hover:underline flex items-center gap-1.5">
-                          <Shirt className="w-3.5 h-3.5 text-slate-400" />
-                          {orden.referencia.codigo}
-                        </Link>
-                      </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-bold text-emerald-700">{buenas}</span>
-                        <span className="text-xs text-slate-400"> / {orden.cantidadTotal} uds</span>
-                      </td>
-                      <td className="py-3.5 px-4 hidden md:table-cell">
-                        <div className="flex flex-wrap gap-1 max-w-xs">
-                          {talleresNombres.length > 0 ? (
-                            talleresNombres.map((tn, idx) => (
-                              <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
-                                {tn}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-xs text-slate-400">-</span>
-                          )}
+                    <li key={orden.id}>
+                      <Link href={`/ordenes/${orden.id}/resumen`} className="flex items-center gap-3 p-4 active:bg-slate-50">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                          <PackageCheck className="w-5 h-5 text-emerald-600" />
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-600 text-xs whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          {fmtFecha(fecha)}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <Link 
-                          href={`/ordenes/${orden.id}/resumen`} 
-                          className="inline-flex items-center justify-center p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      </td>
-                    </tr>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-black text-slate-900 truncate">{nombreOrden(orden)}</p>
+                          <p className="text-xs text-slate-500 truncate">{orden.cliente.nombre} • {fmtFecha(fecha)}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-bold text-emerald-700">{buenas}</p>
+                          <p className="text-[11px] text-slate-400">/ {orden.cantidadTotal} uds</p>
+                        </div>
+                      </Link>
+                    </li>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-          <PaginacionHistorial currentPage={page} totalPages={totalPages} totalItems={totalHistorial} />
-          </>
-        )}
-      </div>
+              </ul>
+
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left text-sm text-slate-700">
+                  <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-400 tracking-wider border-b border-slate-100">
+                    <tr>
+                      <th className="py-3 px-4 sm:px-6">Orden</th>
+                      <th className="py-3 px-4">Cliente</th>
+                      <th className="py-3 px-4">Referencia</th>
+                      <th className="py-3 px-4">Prendas</th>
+                      <th className="py-3 px-4 hidden md:table-cell">Talleres</th>
+                      <th className="py-3 px-4">Fecha Entrega</th>
+                      <th className="py-3 px-4 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {ordenesEntregadas.map((orden) => {
+                      const buenas = orden.asignaciones.reduce((sum, a) => sum + (a.cantidadBuena || 0), 0);
+                      const talleresNombres = Array.from(new Set(orden.asignaciones.map(a => a.taller.nombre)));
+                      const fecha = orden.fechaEntregado || orden.updatedAt;
+
+                      return (
+                        <tr key={orden.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3.5 px-4 sm:px-6 font-black text-slate-900 whitespace-nowrap">
+                            <Link href={`/ordenes/${orden.id}/resumen`} className="hover:text-blue-600 transition-colors">
+                              {nombreOrden(orden)}
+                            </Link>
+                          </td>
+                          <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
+                            {orden.cliente.nombre}
+                          </td>
+                          <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                            <Link href={`/referencias/${orden.referencia.id}`} className="hover:text-blue-600 hover:underline flex items-center gap-1.5">
+                              <Shirt className="w-3.5 h-3.5 text-slate-400" />
+                              {orden.referencia.codigo}
+                            </Link>
+                          </td>
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <span className="font-bold text-emerald-700">{buenas}</span>
+                            <span className="text-xs text-slate-400"> / {orden.cantidadTotal} uds</span>
+                          </td>
+                          <td className="py-3.5 px-4 hidden md:table-cell">
+                            <div className="flex flex-wrap gap-1 max-w-xs">
+                              {talleresNombres.length > 0 ? (
+                                talleresNombres.map((tn, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
+                                    {tn}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-400">-</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-slate-600 text-xs whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                              {fmtFecha(fecha)}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                            <Link 
+                              href={`/ordenes/${orden.id}/resumen`} 
+                              className="inline-flex items-center justify-center p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            >
+                              <ArrowRight className="w-4 h-4" />
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <PaginacionHistorial currentPage={page} totalPages={totalPages} totalItems={totalHistorial} />
+            </>
+          )
+        }
+      />
     </div>
   );
 }

@@ -55,8 +55,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         } bg-white border-r border-slate-100 flex-shrink-0 transition-all duration-300 ease-in-out`}
       >
         <div 
-          className={`h-20 flex items-center ${
-            isCollapsed ? "justify-center flex-col gap-1 px-2" : "justify-between px-6"
+          className={`${
+            isCollapsed ? "py-3 flex flex-col items-center gap-1.5 px-2" : "h-20 flex items-center justify-between px-6"
           } border-b border-slate-50`}
         >
           <Link 
@@ -70,13 +70,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {!isCollapsed && <span className="truncate">Confección</span>}
           </Link>
 
-          <button
-            onClick={toggleCollapsed}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-            title={isCollapsed ? "Expandir menú" : "Contraer menú"}
-          >
-            {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-0.5">
+            <NotificationCenter />
+            <button
+              onClick={toggleCollapsed}
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              title={isCollapsed ? "Expandir menú" : "Contraer menú"}
+            >
+              {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
         
         <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-4"} py-6 space-y-1.5 overflow-y-auto`}>
@@ -103,8 +106,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         
-        <div className={`${isCollapsed ? "p-3" : "p-6"} border-t border-slate-50 space-y-2.5`}>
-          <NotificationCenter variant="sidebar" collapsed={isCollapsed} />
+        <div className={`${isCollapsed ? "p-3" : "p-6"} border-t border-slate-50`}>
           <PwaInstallButton variant="sidebar" collapsed={isCollapsed} />
           <form action={logout}>
             <button 
@@ -138,7 +140,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
              Confección
            </Link>
            <div className="flex items-center gap-1.5">
-             <NotificationCenter variant="mobile-header" />
+             <NotificationCenter />
              <PwaInstallButton variant="mobile-header" />
              <Link
                href="/configuracion"
